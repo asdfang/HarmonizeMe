@@ -1,5 +1,15 @@
 from random import randint
 
+'''
+Creates the random progression. Must pass in inputs during initialization.
+Inputs:
+	Takes in: melody in scale degrees -- Ex: [1, 2, 3, 2, 1, 7, 1]
+	Takes in: mode -- 0: major; 1: minor
+Output: mainly from get_progression_semitones(): a progression with chords represented in semitones away from melody note.
+	Useful for the inputs for pitch shifting.
+	Ex: [[0, -8, -12], [0, -5, -9], [0, -9, -16], [0, -5, -9], [0, -8, -12], [0, -4, -16], [0, -3, -7]]
+
+'''
 class ProgressionCreater:
 	'''
 	Initializes a ProgressionCreater -- MUST pass in melody and mode with initializer

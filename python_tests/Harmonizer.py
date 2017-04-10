@@ -1,4 +1,20 @@
 #Alexander Fang; 4/10/2017
+'''
+Main file to interact with user in command line.
+Splices audio with detected onsets, determines MIDIs of closest semitone given those onsets.
+Gets random progression based off of melody notes and mode, and harmonizes the original sung input.
+
+How to use as of 4/10/2017: run python script python_tests/Harmonizer.py:
+
+python python_tests/Harmonizer.py tonicfilename sungmelodyfilename mode
+
+Inputs:
+	tonicfilename: a sound file containing only one sung note representing the tonic
+	sungmelodyfilename: a sound file containing the full melody
+	mode: 0 for Major, 1 for minor
+Outputs:
+	written sound file containing harmonized sung input
+'''
 
 import sys
 from aubio import source, pitch, onset

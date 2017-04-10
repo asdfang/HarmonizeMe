@@ -2,7 +2,7 @@ import math
 import numpy as np
 
 '''
-A static class intended to deal with conversion between MIDI and frequencies.
+A static class intended to deal with conversion between MIDI, frequencies, and scale degrees and distance in semitones.
 '''
 class PitchConverter:
 	NOTE_NAMES = ["C", "C\u266F/D\u266D", "D", "D\u266F/E\u266D", "E", "F", "F\u266F/G\u266D", "G", "G\u266F/A\u266D", "A", "A\u266F/B\u266D", "B"]
