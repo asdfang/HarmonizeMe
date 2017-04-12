@@ -30,9 +30,9 @@ from PitchConverter import *
 HOP_SIZE = 512
 
 '''
-Get a note in MIDI given a note represented by array of MIDIs or sound file.
-	Takes in: filename
-	Output: note in MIDI
+Get a note in MIDI (rounded to nearest semitone) given a note represented by array of MIDIs or sound file.
+	Takes in: (string filename) or (float array_of_doubles)
+	Output: (float midi_num)
 '''
 def determine_pitch(pitchfile): #it will either be a filename or a numpy array
 	if isinstance(pitchfile, str): #if it's a file
@@ -47,6 +47,8 @@ def determine_pitch(pitchfile): #it will either be a filename or a numpy array
 
 '''
 Deletes zeros from a list
+	Takes in: ([double] alist)
+	Outputs: ([double] new_list))
 '''
 def delete_zeros(alist):
 	newlist = []
@@ -58,9 +60,8 @@ def delete_zeros(alist):
 
 '''
 Gets pitches every HOP_SIZE (512) in MIDI, and onsets in samples from a filename of a sound file
-	Takes in: filename
-	Takes in: sample rate
-	Output: MIDI numbers, onset samples
+	Takes in: (string filename), (double samplerate)
+	Output: ([double] midi_numbers), ([int] onset_in_samples)
 --> NEED a version where it can just take in a float array
 '''
 def getpitches(filename, samplerate):
@@ -183,10 +184,10 @@ audiospliced.append(audiomelody[onset_samps[-1]:len(audiomelody)])
 '''
 Main function. Starts harmonization.
 Takes in a melody and chosen progression by user and returns the realized form of the progression.
-	Takes in: melody in scale degrees -- Ex: [1, 2, 3, 2, 1, 7, 1]
-	Takes in: tonic in MIDI -- Ex: 60 (C)
-	Takes in: spliced audio (with onset)
-	Takes in: mode -- 0: major; 1: minor -- Ex: 0
+	Takes in: ([int] melody_in_scale_degrees) -- Ex: [1, 2, 3, 2, 1, 7, 1]
+	Takes in: ([int] tonic_in_midi) -- Ex: 60 (C)
+	Takes in: ([[double]] spliced_audio) -- spliced with onsets
+	Takes in: ([int] mode) -- 0: major; 1: minor -- Ex: 0
 	Output: writes harmonized sound file
 
 Example usage:

@@ -9,8 +9,8 @@ class PitchConverter:
 
 	'''
 	Gets the exact MIDI number given a frequency.
-		Takes in: frequency in Hertz -- Ex: 442 (Hz)
-		Output: exact MIDI -- Ex: 69.054421862
+		Takes in: (double frequency) -- in Hertz -- Ex: 442 (Hz)
+		Output: (double exact_MIDI) -- Ex: 69.054421862
 	'''
 	@staticmethod
 	def exact_midi_from_freq(frequency):
@@ -19,8 +19,8 @@ class PitchConverter:
 
 	'''
 	Gets the rounded MIDI number (to nearest semitone) given a frequency.
-		Takes in: frequency in Hertz -- Ex: 442 (Hz)
-		Output: rounded MIDI -- Ex: 69
+		Takes in: (double frequency) -- in Hertz -- Ex: 442 (Hz)
+		Output: (int rounded_MIDI) -- Ex: 69
 	'''
 	@staticmethod
 	def rounded_midi_from_freq(frequency):
@@ -28,8 +28,8 @@ class PitchConverter:
 
 	'''
 	Gets note name (displayable to user) given a note in MIDI.
-		Takes in: note in MIDI -- Ex: 69
-		output: note name -- Ex: A
+		Takes in: (int midi_note) -- Ex: 69
+		output: (string note_name) -- Ex: "A"
 	'''
 	@staticmethod
 	def note_name_from_midi(midi_num):
@@ -37,8 +37,8 @@ class PitchConverter:
 
 	'''
 	Get a note in scale degrees when given a note in semitones above a tonic.
-	Takes in: melodic note in semitones -- Ex: 7
-	Output: melodic note in scale degrees -- Ex: 5
+		Takes in: (int midi_note, int tonic_midi) -- Ex: 7
+		Output: (int half_steps_above) -- Ex: 5
 	'''
 	@staticmethod
 	def pitch_in_sd(pitch, tonic):

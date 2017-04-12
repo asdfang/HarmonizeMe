@@ -3,9 +3,9 @@ from random import randint
 '''
 Creates the random progression. Must pass in inputs during initialization.
 Inputs:
-	Takes in: melody in scale degrees -- Ex: [1, 2, 3, 2, 1, 7, 1]
-	Takes in: mode -- 0: major; 1: minor
-Output: mainly from get_progression_semitones(): a progression with chords represented in semitones away from melody note.
+	Takes in: (int melody_scale_degrees) -- Ex: [1, 2, 3, 2, 1, 7, 1]
+	Takes in: (int mode) -- 0: major; 1: minor
+Output: ([[int]]) mainly from get_progression_semitones(): a progression with chords represented in semitones away from melody note.
 	Useful for the inputs for pitch shifting.
 	Ex: [[0, -8, -12], [0, -5, -9], [0, -9, -16], [0, -5, -9], [0, -8, -12], [0, -4, -16], [0, -3, -7]]
 
@@ -13,8 +13,8 @@ Output: mainly from get_progression_semitones(): a progression with chords repre
 class ProgressionCreater:
 	'''
 	Initializes a ProgressionCreater -- MUST pass in melody and mode with initializer
-		Takes in: melody in scale degrees -- Ex: [1, 2, 3, 2, 1, 7, 1]
-		Takes in: mode -- 0: major; 1: minor
+		Takes in: (int melody_in_scale_degrees) -- Ex: [1, 2, 3, 2, 1, 7, 1]
+		Takes in: (int mode) -- 0: major; 1: minor
 		Output: N/A
 
 	Typical complete usage of ProgressionCreater:
@@ -31,7 +31,7 @@ class ProgressionCreater:
 	After initialization, use get_progression_semitones() to get how many semitones
 	to pitch shift away from the melody for each voice.
 		Takes in: melody and mode (from initialization)
-		Output: progression_semitones[[]] -- a 2D array of ints
+		Output: ([[int]] progression_semitones) -- a 2D array of ints
 			Ex: [[0, -8, -12], [0, -5, -9], [0, -9, -16], [0, -5, -9], [0, -8, -12], [0, -4, -16], [0, -3, -7]]
 				progression_semitones[i] will represent a chord in the format of [melody, mid voice, bass voice]
 
@@ -51,7 +51,7 @@ class ProgressionCreater:
 	'''
 	After initialization, use get_progression_RN() to get a progression in Roman numerals
 		Takes in: melody and mode (from initialization)
-		Outputs: progression -- array of strings, each containing a Roman numerals
+		Outputs: ([string] progression) -- array of strings, each containing a Roman numerals
 			Ex: ['I', 'V', 'I', 'V6', 'vi', 'V', 'vi']
 	'''
 	def get_progression_RN(self):
@@ -71,9 +71,9 @@ class ProgressionCreater:
 	'''
 	Helper function.
 	Get array of possible chords in Roman numerals to harmonize the current note in the melody.
-		Takes in: melodic note in scale degrees -- Ex: 5
-		Takes in: mode -- 0: major; 1: minor
-		Outputs: possible chords -- Ex: self.get_possible_chords(5, 0) --> ["I", "I6", "V", "V6"]
+		Takes in: (int melodic_note_in_scale_degrees) -- Ex: 5
+		Takes in: (int mode) -- 0: major; 1: minor
+		Outputs: ([string] possible_chords) -- Ex: self.get_possible_chords(5, 0) --> ["I", "I6", "V", "V6"]
 	'''
 	def get_possible_chords(self, note_sd, mode):
 		if mode == 0:
@@ -104,9 +104,9 @@ class ProgressionCreater:
 	'''
 	Helper function.
 	Get a filled chord in the form of [melody, mid voice, bass voice] in scale degrees.
-		Takes in: melodic note in scale degrees -- Ex: 5
-		Takes in: chord as a Roman numeral (string) -- Ex: "I"
-		Outputs: chord in scale degrees -- Ex: [5, 3, 1]
+		Takes in: (int melodic_note_in_scale_degrees) -- Ex: 5
+		Takes in: (string chord_Roman_numeral -- Ex: "I"
+		Outputs: ([int] chord_scale_degrees) -- Ex: [5, 3, 1]
 	'''
 	def fill_chord(self, note_sd, chord):
 		filled_chord = []
@@ -119,9 +119,9 @@ class ProgressionCreater:
 	Helper function.
 	Get a chord represented in semitones away from the melody.
 	Melodic note will always be 0 semitones away from the melody.
-		Takes in: chord in scale degrees -- Ex: [5, 3, 1]
-		Takes in: mode -- 0: major; 1: minor
-		Outputs: chord in semitones away from melody -- Ex: [0, -3, -19]
+		Takes in: (int chord_scale_degrees) -- Ex: [5, 3, 1]
+		Takes in: (int mode) -- 0: major; 1: minor
+		Outputs: ([int] chord_semitones_away_from_melody) -- Ex: [0, -3, -19]
 	'''
 	def chord_sd_to_semitones(self, chord, mode):
 		if chord == [0, 0, 0]:
@@ -151,9 +151,9 @@ class ProgressionCreater:
 	'''
 	Helper function.
 	Get a note represented in semitones above the tonic (between 0 and 11).
-		Takes in: melodic note in scale degrees -- Ex: 6 (solfege is Le if minor)
-		Takes in: mode -- 0: major; 1: minor -- Ex: 1 (minor)
-		Outputs: semitones above tonic -- Ex: 8
+		Takes in: (int melodic_note_in_scale_degrees) -- Ex: 6 (solfege is Le if minor)
+		Takes in: (int mode) -- 0: major; 1: minor -- Ex: 1 (minor)
+		Outputs: (int semitones_above_tonic) -- Ex: 8
 	'''
 	def note_sd_to_semitones(self, note, mode):
 		if mode == 0:
@@ -185,8 +185,8 @@ class ProgressionCreater:
 	Helper function.
 	Get the bass note in scale degrees given a chord in Roman numerals.
 	Straightforward, as figured bass in the Roman numeral will give away the bass voice.
-		Takes in: chord as a Roman numeral -- Ex: "v"
-		Output: bass voice in scale degrees -- Ex: 5
+		Takes in: (string chord_Roman_numeral) -- Ex: "v"
+		Output: (int bass_scale_degrees) -- Ex: 5
 
 	'''
 	def bass_note(self, chord):
@@ -211,9 +211,9 @@ class ProgressionCreater:
 	Helper function.
 	Get the mid voice in scale degrees given what the melodic note in scale degrees is and
 	a chord in Roman numerals. It will infer what the mid voice should be to fill out the chord.
-		Takes in: melodic note in scale degrees -- Ex: 5
-		Takes in: chord as a Roman numeral -- Ex: "I"
-		Output: mid voice in scale degrees -- Ex: 3
+		Takes in: (int melodic_note_in_scale_degrees) -- Ex: 5
+		Takes in: (string chord_Roman_numeral) -- Ex: "I"
+		Output: (int mid_voice_scale_degrees) -- Ex: 3
 	'''
 	def mid_note(self, note_sd, chord):
 		if note_sd == 0:
