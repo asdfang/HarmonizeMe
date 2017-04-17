@@ -1,3 +1,7 @@
+'''
+Helps evaluate pitch and onset detection
+'''
+
 import numpy as np
 
 actual = [0.0, 1.0, 1.1, 1.5, 1.65]
@@ -11,9 +15,16 @@ for val in expected:
 	new_expected.append(int(val*44100))
 
 '''
-Takes in: (double or int ground_truth) -- ground truth onsets in seconds or samples
-Takes in: (double or int detected_onsets) -- onsets in sec or samps from onset detector
-Takes in: (int mode) -- 0: in seconds, 1: in samples
+Gets quality of the onset detector
+	Takes in: (double or int ground_truth) -- ground truth onsets in seconds or samples
+	Takes in: (double or int detected_onsets) -- onsets in sec or samps from onset detector
+	Takes in: (int mode) -- 0: in seconds, 1: in samples
+	Output: (double or int correct_onsets) -- which detected onsets were within the threshold
+			(double or int closest_onsets) -- array of the closest onsets
+			(double or int avg_diff) -- average difference between a ground truth onset and its closest onset
+			(double or int missed_onsets) -- ground truth onsets that didn't have a detected onset within the threshold
+			(double or int false_onsets) -- detected onsets that weren't a ground truth onset
+
 '''
 def onset_detector_quality(ground_truth, detected_onsets, mode):
 
@@ -61,13 +72,13 @@ def onset_detector_quality(ground_truth, detected_onsets, mode):
 		if d_onset not in closest_onsets:
 			false_onsets.append(d_onset)
 
-	print "ONSET DETECTOR QUALITY RESULTS:"
-	print "ground_truth_onsets: " + str(ground_truth)
-	print "correct_onsets: " + str(correct_onsets)
-	print "closest_onsets: " + str(closest_onsets)
-	print "avg_diff: " + str(avg_diff)
-	print "missed_onsets: " + str(missed_onsets)
-	print "false_onsets: " + str(false_onsets)
+	print "***** ONSET DETECTOR QUALITY RESULTS:"
+	print "   ground_truth_onsets: " + str(ground_truth)
+	print "   correct_onsets: " + str(correct_onsets)
+	print "   closest_onsets: " + str(closest_onsets)
+	print "   avg_diff: " + str(avg_diff)
+	print "   missed_onsets: " + str(missed_onsets)
+	print "   false_onsets: " + str(false_onsets)
 	
 	return correct_onsets, closest_onsets, avg_diff, missed_onsets, false_onsets
 
@@ -75,8 +86,13 @@ def onset_detector_quality(ground_truth, detected_onsets, mode):
 
 
 '''
-
-Takes in: (double true_midi_array) -- has detected pitches in midi, every hop_size samples
+Gets quality of the pitch detector
+	Takes in: (double true_midi_array) -- ground truth melody in midi
+	Takes in: (double detected_midi_verbose) -- has detected pitches in midi, every hop_size samples
+	Takes in: (int true_onsets) -- the ground truth onsets in samples
+	Takes in: (int hop_size) -- hop hop_size
+	Outputs: (double detected_midi) -- detected midi of soundfile partitioned by ground truth onsets
+			 (int percent_correct) -- percent of pitches correct (ignores octave errors)
 
 '''
 def pitch_detector_quality(true_midi_array, detected_midi_verbose, true_onsets, hop_size):
@@ -115,10 +131,10 @@ def pitch_detector_quality(true_midi_array, detected_midi_verbose, true_onsets, 
 
 	percent_correct = (correct * 1.0) / (incorrect + correct * 1.0)
 
-	print "PITCH DETECTOR QUALITY RESULTS:"
-	print "ground_truth_midi: " + str(true_midi_array)
-	print "detected_midi: " + str(detected_midi)
-	print "percent_correct: " + str(percent_correct)
+	print "***** PITCH DETECTOR QUALITY RESULTS:"
+	print "   ground_truth_midi: " + str(true_midi_array)
+	print "   detected_midi: " + str(detected_midi)
+	print "   percent_correct: " + str(percent_correct)
 	return detected_midi, percent_correct
 
 groundtruthmidi = [60.0, 62.0, 64.0]

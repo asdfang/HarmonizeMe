@@ -1,3 +1,7 @@
+'''
+Gets quality of pitch and onset detection
+'''
+
 from detector_tests import *
 from PitchConverter import *
 from aubio import source, pitch, onset
@@ -7,7 +11,18 @@ import librosa
 
 samplerate = 44100
 hopsize = 512
+pathtosoundfile = "../PitchOnsetTrackerTests/Female_1a/Female_1a.wav"
+pathtogroundlabels = "../PitchOnsetTrackerTests/Female_1a/Female_1a_Labels.txt"
 
+'''
+Aubio's pitch and onset detector function.
+	Takes in: (string filename) -- path to audio file
+	Takes in: (int samplerate) -- sample rate
+	Takes in: (int hopsize) -- hop size
+	Outputs as tuple
+	Output: (double pitches) -- detected midi of pitch every hopsize samples
+	Output: (int onsets) -- detected onsets in samples
+'''
 def getpitches(filename, samplerate, hopsize):
 	HOP_SIZE = hopsize
 	downsample = 1
@@ -52,30 +67,40 @@ def getpitches(filename, samplerate, hopsize):
 
 	return pitches, onsets
 
-pathtosound = "../PitchOnsetTrackerTests/Male_1a/Male_1a.wav"
-pathtolabels = "../PitchOnsetTrackerTests/Male_1a/Male_1a_Labels_midi.txt"
-soundfile, sr = librosa.core.load(pathtosound, sr=samplerate)
-detector_results = getpitches(pathtosound, samplerate, hopsize)
+'''
+Gets the quality of the pitch and onset get_detection_quality
+	Takes in: (string path_to_sound_file) -- path to audio file
+	Takes in: (string path_to_groundtruth_labels) -- path to ground truth labels
+	Output: lots of information (see functions in detector_tests.py)
+'''
+def get_detection_quality(path_to_sound_file, path_to_groundtruth_labels):
+
+	pathtosound = path_to_sound_file
+	pathtolabels = path_to_groundtruth_labels
+	soundfile, sr = librosa.core.load(pathtosound, sr=samplerate)
+	detector_results = getpitches(pathtosound, samplerate, hopsize)
 
 
-# parsing ground truths
-ground_truth_midi = []
-ground_truth_onsets_seconds = []
-lines = []
+	# parsing ground truths
+	ground_truth_midi = []
+	ground_truth_onsets_seconds = []
+	lines = []
 
 
-with open(pathtolabels) as input:
-    lines = zip(*(line.strip().split('\t') for line in input))
+	with open(pathtolabels) as input:
+	    lines = zip(*(line.strip().split('\t') for line in input))
 
-for midi, onset in zip(lines[2], lines[0]):
-	if midi.strip() != "SIL":
-		ground_truth_midi.append(float(midi))
-		ground_truth_onsets_seconds.append(float(onset))
+	for midi, onset in zip(lines[2], lines[0]):
+		if midi.strip() != "SIL":
+			ground_truth_midi.append(float(midi))
+			ground_truth_onsets_seconds.append(float(onset))
 
-# convert onsets to samples
-ground_truth_onsets_samps = []
-for onset in ground_truth_onsets_seconds:
-	ground_truth_onsets_samps.append(int(np.around(onset*samplerate)))
+	# convert onsets to samples
+	ground_truth_onsets_samps = []
+	for onset in ground_truth_onsets_seconds:
+		ground_truth_onsets_samps.append(int(np.around(onset*samplerate)))
 
-onset_results = onset_detector_quality(ground_truth_onsets_samps, detector_results[1], 1)
-pitch_results = pitch_detector_quality(ground_truth_midi, detector_results[0], ground_truth_onsets_samps, hopsize)
+	onset_results = onset_detector_quality(ground_truth_onsets_samps, detector_results[1], 1)
+	pitch_results = pitch_detector_quality(ground_truth_midi, detector_results[0], ground_truth_onsets_samps, hopsize)
+
+get_detection_quality(pathtosoundfile, pathtogroundlabels)
