@@ -2,8 +2,8 @@
 
 <html>
 <head>
-	<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-	<title>Live input record and playback</title>
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+  <title>Live input record and playback</title>
   <style type='text/css'>
     ul { list-style: none; }
     #recordingslist audio { display: block; margin-bottom: 10px; }
@@ -90,14 +90,18 @@
     $.post("/bufferData", strData, function(data) {
         newData = data;
         //console.log("\nNewdata?: " + newData);
-        newFloatData = new Float32Array(JSON.parse(newData))
-        console.log("\nNew float data?: " + newFloatData[0]);
-/*
-        recorder.setBuffer(newFloatData, newFloatData.length, function(data) {
-          console.log("set new buffer");
-        }); 
+        var newFloatData = new Float32Array(JSON.parse(newData));
+        var newChannelData = [];
+        newChannelData.push(newFloatData);
 
-        createDownloadLink(); */
+        //console.log("\nNew float data?: " + newChannelData);
+
+        // clear before it gives it new data
+        recorder.clear();
+        
+        recorder.setBuffer(newChannelData);
+
+        createDownloadLink();
       });
   }
 

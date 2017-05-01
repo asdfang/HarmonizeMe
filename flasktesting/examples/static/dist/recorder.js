@@ -45,7 +45,7 @@ var Recorder = exports.Recorder = (function () {
             bufferLen: 4096,
             numChannels: 1,
             mimeType: 'audio/wav'
-        };
+        }; 
         this.recording = false;
         this.callbacks = {
             getBuffer: [],
@@ -107,6 +107,7 @@ var Recorder = exports.Recorder = (function () {
 
             function record(inputBuffer) {
                 for (var channel = 0; channel < numChannels; channel++) {
+                    console.log(typeof inputBuffer);
                     recBuffers[channel].push(inputBuffer[channel]);
                 }
                 recLength += inputBuffer[0].length;
@@ -240,6 +241,7 @@ var Recorder = exports.Recorder = (function () {
         };
     }
 
+    // This is the external functions:
     _createClass(Recorder, [{
         key: 'record',
         value: function record() {
@@ -254,6 +256,12 @@ var Recorder = exports.Recorder = (function () {
         key: 'clear',
         value: function clear() {
             this.worker.postMessage({ command: 'clear' });
+        }
+    }, {
+        key: 'setBuffer',
+        value: function setBuffer(newBuffer) {
+            this.worker.postMessage({ command: 'record',
+            buffer: newBuffer });
         }
     }, {
         key: 'getBuffer',
