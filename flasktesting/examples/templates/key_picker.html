@@ -36,7 +36,11 @@
          br {
             line-height: 150%;
          }
-       
+         .divider{
+            width:10px;
+            height:auto;
+            display:inline-block;
+         }
       </style>
 
    </head>
@@ -171,7 +175,8 @@
                   <td>
                      <div style="float:left; text-align:center" class="form-group">
                         <br>
-                        <button class="btn btn-success" style="float:left;" type="button" onclick="playKey()">Play audio!</button>
+                        <button class="btn btn-success" type="button" onclick="playKey(this)">Play audio!</button>
+                        <button class="btn btn-success" type="button" onclick="stopKey(this)" disabled>Stop</button>
                      </div>
                   </td>
                </tr>
@@ -205,13 +210,15 @@
                var keyString = key.toString();
 
                $.post("/keyData", keyString, function(data) {
-                  console.log("made it");
+                  console.log("data in key_picker.html: " + data);
                });
             }
          }
 
 
-         function playKey() {
+         function playKey(button) {
+            button.disabled = true;
+            button.nextElementSibling.disabled = false;
             var tonic_e = document.getElementById("tonic_picker");
             var mode_e = document.getElementById("mode_picker");
             var selected_tonic = tonic_e.options[tonic_e.selectedIndex].text;
@@ -242,6 +249,17 @@
                   curr_audio.onended = function() {
                      curr_audio = null;
                };
+            }
+         }
+
+         function stopKey(button) {
+            button.disabled = true;
+            button.previousElementSibling.disabled = false;
+
+            if (curr_audio != null) {
+               curr_audio.pause();
+               curr_audio.currentTime = 0;
+               curr_audio = null;
             }
          }
       </script>
