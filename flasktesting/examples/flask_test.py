@@ -14,6 +14,7 @@ def index():
 def harmonizer():
 	return render_template('example_simple_exportwav.html')
 
+#testing with sin
 @app.route('/bufferData', methods=['GET', 'POST'])
 def bufferData():
 	if request.method == 'POST':
@@ -27,6 +28,32 @@ def bufferData():
 	else:
 		return "Normal"
 
+#harmonizing
+@app.route('/harmonizeData', methods=['GET', 'POST'])
+def harmonizeData():
+	if request.method == 'POST':
+		string_data = cache.get('key_data')
+		string_array = string_data.split(',')
+		tonic = int(string_array[0])
+		mode = int(string_array[1])
+		
+		audiodata = request.get_data()
+		#print "This is data", audiodata
+
+		newdata = processAudioWithHarmonies(audiodata, tonic, mode)
+		#print newdata
+
+		#normalize
+		newdata = newdata / np.max(np.abs(newdata))
+
+		#convert to string
+		pythlist = newdata.tolist()
+		pythliststring = str(pythlist)
+		return pythliststring
+		#return request.get_data() + ":response"
+	else:
+		return "Normal"
+
 @app.route('/keyData', methods=['GET', 'POST'])
 def keyData():
 	if request.method == 'POST':
@@ -35,6 +62,7 @@ def keyData():
 		return request.get_data()
 	elif request.method == 'GET':
 		return_data = cache.get('key_data')
+		cache.set('key_data', return_data) #set it again for /bufferData. works!
 		return return_data
 	else:
 		return "yes"
@@ -57,10 +85,11 @@ def processAudioWithSin(audio):
 	pythliststring = str(pythlist)
 	return pythliststring
 
-def processAudioWithHarmonies(audio):
+#not useful
+def processAudioWithHarmonies(audio, tonic, mode):
 	array = np.fromstring(audio, sep=',')
 	print type(array)
-	newaudio = harmonizeme(array)
+	newaudio = harmonizeme(array, tonic, mode)
 	return newaudio
 
 def build_sinwave(num_samples, freq, samplerate):

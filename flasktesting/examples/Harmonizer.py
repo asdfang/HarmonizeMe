@@ -184,16 +184,20 @@ samplerate = 44100 / downsample
 if len( sys.argv ) > 4: samplerate = int(sys.argv[4])
 '''
 
-def harmonizeme(audio):
+def harmonizeme(audio, tonic_input, mode_input):
 	'''
 	GETTING TONIC AND EXPITCH
 	'''
-	tonic = 60.0
+	tonic = tonic_input*1.0
+	mode = int(mode_input) #what type is mode_input?
+
 	#expitch = determine_pitch(melodyfilename) #not doing just a single pitch anymore
 	#print 'Tonic midi number:'
 	#print tonic
 
-	audiolist = audio.tolist() 
+	audiolist = audio.tolist() #is this useful?
+
+	audio = audio.astype(np.float32)
 	pitchesmelody_verb = aubio_pitches(audio)
 	onset_samps = aubio_onsets(audio)
 
@@ -228,7 +232,8 @@ def harmonizeme(audio):
 	'''
 	splicing the audio; audiomelody is np.array representing wav file
 	'''
-	audiomelody, sr = librosa.core.load(melodyfilename, sr=44100)
+	#audiomelody, sr = librosa.core.load(melodyfilename, sr=44100)
+	audiomelody = audio
 	audiospliced = []
 	audiospliced.append(audiomelody[0:onset_samps[0]])
 	for ii in range(len(onset_samps) - 1):
@@ -292,8 +297,8 @@ def harmonize(melody, tonic, splicedaudio, mode):
 		complete = numpy.concatenate((complete, soundingchord))
 
 	#complete = (numpy.array(complete)).flatten()
-	outputname = str(raw_input('Please enter a file name for your output file (include .wav): '))
-	librosa.output.write_wav(outputname, complete, 44100)
+	#outputname = str(raw_input('Please enter a file name for your output file (include .wav): '))
+	#librosa.output.write_wav(outputname, complete, 44100)
 
 	return complete, realized
 

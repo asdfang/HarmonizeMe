@@ -133,7 +133,7 @@
 
       <div class="jumbotron">
          <p style="font-size:14px; text-align:center;">Use a recent version of Google Chrome.<br>
-                        Before you enabling microphone input, plug in headphones or turn the volume down to avoid loud feedback!</p> <br>
+                        Before you enable microphone input, plug in headphones or turn the volume down to avoid loud feedback!</p>
          <h3 style="text-align:center;">Instructions:</h3>
          <p style="font-size:16px; text-align:center;">
             Use the "Record" button to begin recording, and "Stop" to stop recording. <br>
@@ -146,8 +146,12 @@
             <button class="btn btn-info" onclick="startRecording(this);">Record</button>
             <button class="btn btn-info" onclick="stopRecording(this);" disabled>Stop</button>
             <button class="btn btn-info" onclick="clearRecorder(this);" style="margin-right:12px">Clear</button>
-            <button class="btn btn-primary" onclick="postData(this);">Harmonize!!</button> <br><br>
-            <button class="btn btn-info" onclick="printBufferData(this);">print buffer data</button>
+            <button class="btn btn-primary" onclick="harmonize(this);">Harmonize!!</button> <br><br>
+
+
+            fordebuggingfornow: <button class="btn btn-info" onclick="printBufferData(this);">print buffer data</button>
+                              <button class="btn btn-primary" onclick="postData(this);">sinwave!!</button> <br><br>
+
          </div>
 
          <br><br>
@@ -244,6 +248,27 @@
          });
    }
 
+   function harmonize(button) {
+      strData = bufferData.toString();
+      newData = ""
+      $.post("/harmonizeData", strData, function(data) {
+            newData = data;
+            //console.log("\nNewdata?: " + newData);
+            var newFloatData = new Float32Array(JSON.parse(newData));
+            var newChannelData = [];
+            newChannelData.push(newFloatData);
+
+            //console.log("\nNew float data?: " + newChannelData);
+
+            // clear before it gives it new data
+            recorder.clear();
+            
+            recorder.setBuffer(newChannelData);
+
+            createDownloadLink();
+         });
+   }
+
    function createDownloadLink() {
       recorder && recorder.exportWAV(function(blob) {
          var url = URL.createObjectURL(blob);
@@ -304,7 +329,6 @@
    window.onload = function init() {
       $.get("/keyData", function(data) {
          var return_data = data.split(',');
-         console.log("Tonic: " + return_data[0] + "; mode: " + return_data[1]);
          tonic = parseInt(return_data[0]);
          mode = parseInt(return_data[1]);
       });
