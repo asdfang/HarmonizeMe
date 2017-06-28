@@ -1,5 +1,5 @@
 '''
-Helps evaluate pitch and onset detection
+Helps evaluate pitch and onset detection (never called, used by detector_quality.py)
 '''
 
 import numpy as np
@@ -13,6 +13,17 @@ for val in actual:
 	new_actual.append(int(val*44100))
 for val in expected:
 	new_expected.append(int(val*44100))
+
+
+
+
+
+def delete_zeros_ones(alist):
+	newlist = []
+	for element in alist:
+		if element != 0.0 or element != -1.0:
+			newlist.append(element)
+	return newlist
 
 '''
 Gets quality of the onset detector
@@ -31,6 +42,13 @@ def onset_detector_quality(ground_truth, detected_onsets, mode):
 	missed_onsets = [] # this will be returned
 	closest_onsets = [] # this will be returned
 	correct_onsets = [] # this will be returned
+	false_onsets = [] # this will be returned
+
+
+	if (len(detected_onsets) == 0):
+											#avg_diff					#recall, precision
+		return correct_onsets, closest_onsets, 0, missed_onsets, false_onsets, 0, 0
+
 
 	threshold = 0
 	if mode == 0:
@@ -40,7 +58,6 @@ def onset_detector_quality(ground_truth, detected_onsets, mode):
 
 	for e_onset in ground_truth:
 		# see which onset in detected_onsets is closest:
-
 		min_diff = abs(e_onset - detected_onsets[0])
 		min_diff_ii = 0
 
@@ -67,11 +84,11 @@ def onset_detector_quality(ground_truth, detected_onsets, mode):
 	avg_diff = total_diff / len(ground_truth) # this will be returned
 
 	# get false onsets
-	false_onsets = []
 	for d_onset in detected_onsets:
 		if d_onset not in closest_onsets:
 			false_onsets.append(d_onset)
 
+	'''
 	print "***** ONSET DETECTOR QUALITY RESULTS:"
 	print "   ground_truth_onsets: " + str(ground_truth)
 	print "   correct_onsets: " + str(correct_onsets)
@@ -79,8 +96,16 @@ def onset_detector_quality(ground_truth, detected_onsets, mode):
 	print "   avg_diff: " + str(avg_diff)
 	print "   missed_onsets: " + str(missed_onsets)
 	print "   false_onsets: " + str(false_onsets)
+	'''
 	
-	return correct_onsets, closest_onsets, avg_diff, missed_onsets, false_onsets
+	num_ground_truth_onsets = len(ground_truth)
+
+	recall = ((len(correct_onsets) * 1.0) / num_ground_truth_onsets) * 100
+	precision = (len(correct_onsets) / (1.0 * len(detected_onsets))) * 100
+	
+	#percent_missed = (len(missed_onsets) * 1.0) / num_ground_truth_onsets))
+
+	return correct_onsets, closest_onsets, avg_diff, missed_onsets, false_onsets, recall, precision
 
 #results = onset_detector_quality(new_expected, new_actual, 1)
 
@@ -116,7 +141,9 @@ def pitch_detector_quality(true_midi_array, detected_midi_verbose, true_onsets, 
 
 	detected_midi = []
 	for note in partitioned_signal:
-		detected_midi.append(np.median(note))
+		detected_midi.append(np.median(delete_zeros_ones(note)))
+
+	differences = []
 
 	correct = 0
 	incorrect = 0
@@ -124,17 +151,23 @@ def pitch_detector_quality(true_midi_array, detected_midi_verbose, true_onsets, 
 	for ii in range(len(true_midi_array)):
 		# mod to disregard octave displacement
 		diff = abs(true_midi_array[ii] - detected_midi[ii]) % 12.0
-		if diff < 0.5 or diff > 11.5:
+		differences.append(diff)
+		if diff < 1.0 or diff > 11.0:
 			correct = correct + 1
 		else:
 			incorrect = incorrect + 1
 
-	percent_correct = (correct * 1.0) / (incorrect + correct * 1.0)
 
+	percent_correct = (correct * 1.0) / (incorrect + correct * 1.0) * 100
+
+	'''
 	print "***** PITCH DETECTOR QUALITY RESULTS:"
 	print "   ground_truth_midi: " + str(true_midi_array)
 	print "   detected_midi: " + str(detected_midi)
 	print "   percent_correct: " + str(percent_correct)
+	print "   differences: " + str(differences)
+	'''
+
 	return detected_midi, percent_correct
 
 groundtruthmidi = [60.0, 62.0, 64.0]
