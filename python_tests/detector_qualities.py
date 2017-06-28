@@ -81,6 +81,11 @@ Aubio's pitch detector
 '''
 def aubio_pitches(audio):
 	a = audio
+
+	#pad with zeros:
+	audio_length = a.size
+	num_padded_zeros = 128 - (audio_length % 128)
+	a = np.concatenate([a, np.zeros(num_padded_zeros, dtype=np.float32)])
 	cands = {}
 
 	for method in methods:
@@ -105,6 +110,11 @@ Aubio's onset detector
 '''
 def aubio_onsets(audio):
 	a = audio
+
+	#pad with zeros:
+	audio_length = a.size
+	num_padded_zeros = 128 - (audio_length % 128)
+	a = np.concatenate([a, np.zeros(num_padded_zeros, dtype=np.float32)])
 	onsets = []
 
 	#methods: 'phase' and 'default'
@@ -192,7 +202,7 @@ def get_detection_quality(path_to_sound_file, path_to_groundtruth_labels):
 	num_padded_zeros = 128 - (audio_length % 128)
 	soundfile = np.concatenate([soundfile, np.zeros(num_padded_zeros, dtype=np.float32)])
 	
-	# parsing ground truths
+	#parsing ground truths
 	ground_truth_midi = []
 	ground_truth_onsets_seconds = []
 	ground_truth_onsets_samps = []

@@ -51,6 +51,10 @@ def run_onset(o, input_vec):
 
 def aubio_pitches(audio):
 	a = audio
+	#pad with zeros:
+	audio_length = a.size
+	num_padded_zeros = 128 - (audio_length % 128)
+	a = np.concatenate([a, np.zeros(num_padded_zeros, dtype=np.float32)])
 	cands = {}
 
 	for method in methods:
@@ -70,6 +74,10 @@ def aubio_pitches(audio):
 
 def aubio_onsets(audio):
 	a = audio
+	#pad with zeros:
+	audio_length = a.size
+	num_padded_zeros = 128 - (audio_length % 128)
+	a = np.concatenate([a, np.zeros(num_padded_zeros, dtype=np.float32)])
 	onsets = []
 
 	#methods: 'phase' and 'default'
