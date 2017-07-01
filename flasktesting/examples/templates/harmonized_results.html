@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <title>Hear Harmonization!</title>
+      <script src="/static/jquery-3.2.1.min.js"></script>
+      <link rel="stylesheet" type="text/css" href="../static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+      <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.0.52/wavesurfer.min.js"></script>
+      <script src="/static/dist/recorder.js"></script>
+      <style type='text/css'>
+        ul { list-style: none; }
+        #recordingslist audio { display: block; margin-bottom: 10px; }
+        * {
+            -webkit-user-select: none;
+          }
+          body, html {
+            margin: 0;
+            height: 100%;
+            position: relative;
+          }
+          body {
+            padding-top: 70px;
+            overflow: auto;
+            background-color: lightblue;
+          }
+          h1 {
+            text-align: center;
+          }
+          td {
+            padding-top:5px;
+            padding-bottom:5px;
+            padding-right:10px;
+          }
+          li {
+            text-align: center;
+          }
+          br {
+            line-height: 150%;
+          }
+         .btn-space {
+            margin-left: 1px;
+            margin-right: 1px;
+         }
+      </style>
+   </head>
+   <body>
+      <nav class="navbar navbar-inverse navbar-fixed-top">
+         <div class="navbar-header">
+            <a href="#" class="navbar-brand"><span class="glyphicon glyphicon-music" aria-hidden="true"></span> HarmonizeMe</a>
+         </div>
+         <ul class="nav navbar-nav">
+            <li><a href="#">Replacethis,formusictheory</a></li>
+         </ul>
+      </nav>
+
+      <div class="container">
+         <h1>Hear your harmonization!</h1>
+
+         <div class="jumbotron">
+            <div id="waveform"></div> <br>
+            <div style="text-align:center">
+               <button id="playButton" class="btn btn-info btn-space" onclick="play(this);"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
+               <button class="btn btn-info btn-space" onclick="pause(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
+               <button class="btn btn-info btn-space" onclick="stop(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+            </div>
+         </div>
+            
+      </div>
+
+      <script>
+         var harmonized_audio;
+         var wavesurfer;
+         var numChannels = 1;
+         var sampleRate = 44100;
+         var replay = false;
+         // var audioCtx = new AudioContext();
+         // var buffer;
+
+         window.onload = function init() {
+            $.get("/harmonizeData", function(data) {
+               harmonized_audio = data;
+               //console.log("\nNewdata?: " + newData);
+               harmonized_audio = new Float32Array(JSON.parse(harmonized_audio));
+               var num_samples = harmonized_audio.length;
+
+               // console.log(harmonized_audio);
+               // buffer = audioCtx.createBuffer(1, num_samples, 44100);
+
+               initWaveSurfer();
+
+            });
+         }
+
+
+         function initWaveSurfer() {
+            // turn Float32Array into normal javascript array
+            var arr = Array.prototype.slice.call(harmonized_audio);
+            var dataview = encodeWAV(arr);
+            var audioBlob = new Blob([dataview], { type: 'audio/wav' });
+            // console.log(audioBlob);
+            //ar url = URL.createObjectURL(blob);
+
+            // console.log("jfsdklafjdlkas");
+            // console.log(JSON.stringify(blob));
+
+            wavesurfer = WaveSurfer.create({
+               container: '#waveform',
+               scrollParent: true
+            });
+
+            wavesurfer.loadBlob(audioBlob);
+            wavesurfer.on('ready', function() {
+               console.log("WaveSurfer ready to play.");
+               wavesurfer.on('finish', function() {
+                  replay = true;
+                  pB = document.getElementById("playButton");
+                  // enable play button when finished
+                  pB.disabled = false;
+                  // disable pause and stop button when finished
+                  pB.nextElementSibling.disabled = true;
+                  pB.nextElementSibling.nextElementSibling.disabled = true;
+               });
+            });
+
+         }
+
+         function play(button) {
+            if (replay) {
+               wavesurfer.stop();
+               replay = false;
+            }
+            // disable Play button while playing
+            button.disabled = true;
+            // enable Pause button while playing
+            button.nextElementSibling.disabled = false;
+            // enable Stop button while playing
+            button.nextElementSibling.nextElementSibling.disabled = false;
+
+            wavesurfer.play();
+         }
+
+         function pause(button) {
+            // enable Play button while paused
+            button.previousElementSibling.disabled = false;
+            // disable Pause button while paused
+            button.disabled = true;
+            // enable Stop button while paused
+            button.nextElementSibling.disabled = false;
+
+            wavesurfer.pause();
+         }
+
+         function stop(button) {
+            // enable Play button while stopped
+            button.previousElementSibling.previousElementSibling.disabled = false;
+            // disable Pause button while stopped
+            button.previousElementSibling.disabled = true;
+            // disable Stop button while stopped
+            button.disabled = true;
+
+            wavesurfer.stop();
+         }
+
+
+         /*
+          * recorder.js functions to help successfully create the blob to load into
+          * Before putting it into the blob, encode it correctly...
+          * This has a replica -- make another js file for this maybe?
+          */
+
+          // helper for encodeWAV
+         function writeString(view, offset, string) {
+             for (var i = 0; i < string.length; i++) {
+                 view.setUint8(offset + i, string.charCodeAt(i));
+             }
+         }
+
+         // helper for encodeWAV
+         function floatTo16BitPCM(output, offset, input) {
+             for (var i = 0; i < input.length; i++, offset += 2) {
+                 var s = Math.max(-1, Math.min(1, input[i]));
+                 output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+             }
+         }
+
+         // helper for exportWAV
+         function encodeWAV(samples) {
+            var buffer = new ArrayBuffer(44 + samples.length * 2);
+            var view = new DataView(buffer);
+
+            /* RIFF identifier */
+            writeString(view, 0, 'RIFF');
+            /* RIFF chunk length */
+            view.setUint32(4, 36 + samples.length * 2, true);
+            /* RIFF type */
+            writeString(view, 8, 'WAVE');
+            /* format chunk identifier */
+            writeString(view, 12, 'fmt ');
+            /* format chunk length */
+            view.setUint32(16, 16, true);
+            /* sample format (raw) */
+            view.setUint16(20, 1, true);
+            /* channel count */
+            view.setUint16(22, numChannels, true);
+            /* sample rate */
+            view.setUint32(24, sampleRate, true);
+            /* byte rate (sample rate * block align) */
+            view.setUint32(28, sampleRate * 4, true);
+            /* block align (channel count * bytes per sample) */
+            view.setUint16(32, numChannels * 2, true);
+            /* bits per sample */
+            view.setUint16(34, 16, true);
+            /* data chunk identifier */
+            writeString(view, 36, 'data');
+            /* data chunk length */
+            view.setUint32(40, samples.length * 2, true);
+
+            floatTo16BitPCM(view, 44, samples);
+
+            return view;
+         }
+      </script>
+
+
+
+
+
+
+
+
+   </body>
+</html>

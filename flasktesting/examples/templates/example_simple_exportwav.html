@@ -7,6 +7,7 @@
    <script src="/static/jquery-3.2.1.min.js"></script>
    <link rel="stylesheet" type="text/css" href="../static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
    <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+   <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.0.52/wavesurfer.min.js"></script>
    <script src="/static/dist/recorder.js"></script>
    <style type='text/css'>
       ul { list-style: none; }
@@ -37,6 +38,18 @@
          }
          br {
             line-height: 150%;
+         }
+         .btn-xlarge {
+            padding: 18px 28px;
+            font-size: 22px;
+            line-height: normal;
+            -webkit-border-radius: 8px;
+               -moz-border-radius: 8px;
+                  border-radius: 8px;
+         }
+         .btn-space {
+            margin-left: 1px;
+            margin-right: 1px;
          }
    </style>
 </head>
@@ -119,13 +132,13 @@
       </div>
 
    <nav class="navbar navbar-inverse navbar-fixed-top">
-         <div class="navbar-header">
-            <a href="#" class="navbar-brand"><span class="glyphicon glyphicon-music" aria-hidden="true"></span> HarmonizeMe</a>
-         </div>
-         <ul class="nav navbar-nav">
-            <li><a href="#">Replacethis,formusictheory</a></li>
-         </ul>
-      </nav>
+      <div class="navbar-header">
+         <a href="#" class="navbar-brand"><span class="glyphicon glyphicon-music" aria-hidden="true"></span> HarmonizeMe</a>
+      </div>
+      <ul class="nav navbar-nav">
+         <li><a href="#">Replacethis,formusictheory</a></li>
+      </ul>
+   </nav>
 
 
    <div class="container">
@@ -136,31 +149,40 @@
                         Before you enable microphone input, plug in headphones or turn the volume down to avoid loud feedback!</p>
          <h3 style="text-align:center;">Instructions:</h3>
          <p style="font-size:16px; text-align:center;">
-            Use the "Record" button to begin recording, and "Stop" to stop recording. <br>
-            Check the recording that popped up below, to see if you are satisfied. <br>
-            Press "Clear" to clear the buffer and re-start the process is needed. <br>
-            Then, press "Harmonize", and play the next file that appears!
+            "Record" begins recording, so start singing! "Pause" lets you stop and continue recording later. <br>
+            "Stop" lets you completely stop and start over if needed. If you're satisfied, press "Harmonize!" <br>
          </p> 
 
          <div id="recordingButtons" style="text-align:center">
-            <button class="btn btn-info" onclick="startRecording(this);">Record</button>
-            <button class="btn btn-info" onclick="stopRecording(this);" disabled>Stop</button>
-            <button class="btn btn-info" onclick="clearRecorder(this);" style="margin-right:12px">Clear</button>
-            <button class="btn btn-primary" onclick="harmonize(this);">Harmonize!!</button> <br><br>
+            <button id="recordButton" class="btn btn-info btn-space" onclick="startRecording(this);"><span class="glyphicon glyphicon-record" aria-hidden="true"></span> Record</button>
+            <button class="btn btn-info btn-space" onclick="pauseRecording(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
+            <button class="btn btn-info btn-space" onclick="stopRecording(this);" style="margin-right:64px" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+            <!-- <button class="btn btn-primary" onclick="harmonize(this);">Harmonize!!</button> <br><br> -->
+            <!-- testing: -->
+            <a id="harmonized_results_link" href="{{ url_for('harmonizedResults') }}" class="btn btn-primary btn-xlarge disabled">Harmonize!!</a> 
 
-
-            fordebuggingfornow: <button class="btn btn-info" onclick="printBufferData(this);">print buffer data</button>
-                              <button class="btn btn-primary" onclick="postData(this);">sinwave!!</button> <br><br>
+            <br> <br>
+            <!-- hidden at first -->
+            <p id="playRecordedInstructions" style="font-size:16px; text-align:center; display:none">
+               Listen to what you just recorded below! You are free to re-record if you would like.
+            </p>
+            <div id="waveform"></div> <br>
+            <div style="text-align:center">
+               <button id="playButton" class="btn btn-info btn-space" onclick="play(this);" style="display:none"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
+               <button class="btn btn-info btn-space" onclick="pause(this);" style="display:none" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
+               <button class="btn btn-info btn-space" onclick="stop(this);" style="display:none" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+            </div>
 
          </div>
-
-         <br><br>
-         <div id="replayKey" style="text-align:center">
+         <br> <br>
+         <div id="replayKey" style="text-align:center"> 
             <p align="center">If you need to re-listen to your key, click the button below:</p>
-            <button class="btn btn-success" type="button" onclick="playKey(this)">Replay key!</button>
-            <button class="btn btn-success" type="button" onclick="stopKey(this)" disabled>Stop</button>
+            <button class="btn btn-success btn-space" type="button" onclick="playKey(this)"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Replay key!</button>
+            <button class="btn btn-success btn-space" type="button" onclick="stopKey(this)" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
          </div>
       </div>
+
+      <div id="waveform"></div>
    </div>
    
    <h2>Recordings</h2>
@@ -177,9 +199,21 @@
    var audio_context;
    var recorder;
    var bufferData;
-   var tonic;
-   var mode;
+   var tonic, mode;
    var curr_audio;
+   var numChannels = 1;
+   var sampleRate = 44100;
+   var replay = false;
+   var wavesurfer;
+   var wf; //waveform
+   var pB; //playButton
+   var rB; //recordButton
+   var p;
+
+
+   function linkIsDisabled(classString) {
+      return classString.slice(classString.length-9) === " disabled";
+   }
 
    function startUserMedia(stream) {
       var input = audio_context.createMediaStreamSource(stream);
@@ -194,81 +228,142 @@
    }
 
    function startRecording(button) {
+      replay = false;
+      wavesurfer.empty();
       recorder && recorder.record();
+      // disable Record button while recording
       button.disabled = true;
+      // enable Pause button while recording
       button.nextElementSibling.disabled = false;
+      // enable Stop button while recording
+      button.nextElementSibling.nextElementSibling.disabled = false;
+      // disable Harmonize button while recording
+      var l = document.getElementById("harmonized_results_link");
+      if (!linkIsDisabled(l.className)) {
+         l.className = l.className + " disabled";
+      }
+      pB.disabled = true;
       __log('Recording...');
+   }
+
+   function pauseRecording(button) {
+      recorder && recorder.stop();
+      // enable Record button while paused
+      button.previousElementSibling.disabled = false;
+      // disable Pause button while paused
+      button.disabled = true;
+      // enable Stop button while paused
+      button.nextElementSibling.disabled = false;
+      // disable Harmonize button while paused
+      var l = document.getElementById("harmonized_results_link");
+      if (!linkIsDisabled(l.className)) {
+         l.className = l.className + " disabled";
+      }  
+      __log('Stopped recording.');
+      
+      // create WAV download link using audio data blob
+      // createDownloadLink();
    }
 
    function stopRecording(button) {
       recorder && recorder.stop();
+      // enable Record button while stopped
+      button.previousElementSibling.previousElementSibling.disabled = false;
+      // disable Pause button while stopped
+      button.previousElementSibling.disabled = true;
+      // disable Stop button while stopped
       button.disabled = true;
-      button.previousElementSibling.disabled = false;
+      // enable Harmonize button ONLY while stopped
+      var l = document.getElementById("harmonized_results_link");
+      if (linkIsDisabled(l.className)) {
+         l.className = l.className.slice(0, l.className.length-9);
+      }
+
+      pB.disabled = false;
       __log('Stopped recording.');
       
       // create WAV download link using audio data blob
       createDownloadLink();
 
-      // get the buffer data:
+      // get the buffer data, before clearing recorder's buffer
       recorder.getBuffer(function(data) {
          bufferData = data;
-      });
+         //show waveform and its buttons
+         var wf = document.getElementById('waveform');
+         wf.style.display = '';
+         pB.style.display = 'inline';
+         pB.nextElementSibling.style.display = 'inline';
+         pB.nextElementSibling.nextElementSibling.style.display = 'inline';
+         p.style.display = 'inline';
 
-      // MOVED TO clearRecorder
-      //recorder.clear();
+         // BUFFERDATA HAS OTHER CHANNELS IN IT TOO. 
+         var arr = Array.prototype.slice.call(bufferData[0]);
+         var dataview = encodeWAV(arr);
+         var audioBlob = new Blob([dataview], { type: 'audio/wav' });
+
+         wavesurfer.loadBlob(audioBlob);
+         wavesurfer.on('ready', function() {
+            console.log("WaveSurfer is ready to play.");
+            wavesurfer.on('finish', function() {
+               replay = true;
+               pB = document.getElementById("playButton");
+               // enable play button when finished
+               pB.disabled = false;
+               // disable pause and stop button when finished
+               pB.nextElementSibling.disabled = true;
+               pB.nextElementSibling.nextElementSibling.disabled = true;
+               // enable rerecording
+               rB.disabled = false;
+            });
+         });
+      });
+      recorder.clear();
+
+   }
+
+   function play(button) {
+      if (replay) {
+         wavesurfer.stop();
+         replay = false;
+      }
+      // disable Play button while playing
+      button.disabled = true;
+      // enable Pause button while playing
+      button.nextElementSibling.disabled = false;
+      // enable Stop button while playing
+      button.nextElementSibling.nextElementSibling.disabled = false;
+      // disable Record button while playing
+      rB.disabled = true;
+      wavesurfer.play();
+   }
+
+   function pause(button) {
+      // enable Play button while paused
+      button.previousElementSibling.disabled = false;
+      // disable Pause button while paused
+      button.disabled = true;
+      // enable Stop button while paused
+      button.nextElementSibling.disabled = false;
+
+      wavesurfer.pause();
+   }
+
+   function stop(button) {
+      // enable Play button while stopped
+      button.previousElementSibling.previousElementSibling.disabled = false;
+      // disable Pause button while stopped
+      button.previousElementSibling.disabled = true;
+      // disable Stop button while stopped
+      button.disabled = true;
+      // enable Record button while stopped
+      rB.disabled = false;
+      wavesurfer.stop();
    }
 
    function printBufferData(button) {
       console.log(bufferData);
    }
-
-   function clearRecorder(button) {
-      recorder.clear();
-   }
-
-   function postData(button) {
-      //console.log(bufferData);
-      strData = bufferData.toString();
-      newData = ""
-      $.post("/bufferData", strData, function(data) {
-            newData = data;
-            //console.log("\nNewdata?: " + newData);
-            var newFloatData = new Float32Array(JSON.parse(newData));
-            var newChannelData = [];
-            newChannelData.push(newFloatData);
-
-            //console.log("\nNew float data?: " + newChannelData);
-
-            // clear before it gives it new data
-            recorder.clear();
-            
-            recorder.setBuffer(newChannelData);
-
-            createDownloadLink();
-         });
-   }
-
-   function harmonize(button) {
-      strData = bufferData.toString();
-      newData = ""
-      $.post("/harmonizeData", strData, function(data) {
-            newData = data;
-            //console.log("\nNewdata?: " + newData);
-            var newFloatData = new Float32Array(JSON.parse(newData));
-            var newChannelData = [];
-            newChannelData.push(newFloatData);
-
-            //console.log("\nNew float data?: " + newChannelData);
-
-            // clear before it gives it new data
-            recorder.clear();
-            
-            recorder.setBuffer(newChannelData);
-
-            createDownloadLink();
-         });
-   }
-
+ 
    function createDownloadLink() {
       recorder && recorder.exportWAV(function(blob) {
          var url = URL.createObjectURL(blob);
@@ -326,13 +421,126 @@
       }
    }
 
+   /*
+    * recorder.js internal functions to help successfully create the blob to load into
+    * Before putting it into the blob, encode it correctly...
+    */
+    // helper for encodeWAV
+   function writeString(view, offset, string) {
+       for (var i = 0; i < string.length; i++) {
+           view.setUint8(offset + i, string.charCodeAt(i));
+       }
+   }
+
+   // helper for encodeWAV
+   function floatTo16BitPCM(output, offset, input) {
+       for (var i = 0; i < input.length; i++, offset += 2) {
+           var s = Math.max(-1, Math.min(1, input[i]));
+           output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+       }
+   }
+
+   // helper for exportWAV
+   function encodeWAV(samples) {
+      var buffer = new ArrayBuffer(44 + samples.length * 2);
+      var view = new DataView(buffer);
+
+      /* RIFF identifier */
+      writeString(view, 0, 'RIFF');
+      /* RIFF chunk length */
+      view.setUint32(4, 36 + samples.length * 2, true);
+      /* RIFF type */
+      writeString(view, 8, 'WAVE');
+      /* format chunk identifier */
+      writeString(view, 12, 'fmt ');
+      /* format chunk length */
+      view.setUint32(16, 16, true);
+      /* sample format (raw) */
+      view.setUint16(20, 1, true);
+      /* channel count */
+      view.setUint16(22, numChannels, true);
+      /* sample rate */
+      view.setUint32(24, sampleRate, true);
+      /* byte rate (sample rate * block align) */
+      view.setUint32(28, sampleRate * 4, true);
+      /* block align (channel count * bytes per sample) */
+      view.setUint16(32, numChannels * 2, true);
+      /* bits per sample */
+      view.setUint16(34, 16, true);
+      /* data chunk identifier */
+      writeString(view, 36, 'data');
+      /* data chunk length */
+      view.setUint32(40, samples.length * 2, true);
+
+      floatTo16BitPCM(view, 44, samples);
+
+      return view;
+   }
+
+   // function exportWAV(type) {
+   //    var buffers = [];
+   //    for (var channel = 0; channel < numChannels; channel++) {
+   //       buffers.push(mergeBuffers(recBuffers[channel], recLength));
+   //    }
+   //    var interleaved = undefined;
+   //    if (numChannels === 2) {
+   //       interleaved = interleave(buffers[0], buffers[1]);
+   //    } else {
+   //       interleaved = buffers[0];
+   //    }
+   //    var dataview = encodeWAV(interleaved);  
+   //    var audioBlob = new Blob([dataview], { type: type });
+
+   //    return audioBlob;
+   // }
+
+   function initWaveSurfer() {
+      wavesurfer = WaveSurfer.create({
+         container: '#waveform',
+         scrollParent: true
+      });
+   }
+
    window.onload = function init() {
+      // hide WaveSurfer and its buttons at first
+      wf = document.getElementById('waveform');
+      wf.style.display = 'none';
+      pB = document.getElementById('playButton');
+      p = document.getElementById('playRecordedInstructions');
+      rB = document.getElementById('recordButton');
+
+      // getting tonic and mode from previous page
       $.get("/keyData", function(data) {
          var return_data = data.split(',');
          tonic = parseInt(return_data[0]);
          mode = parseInt(return_data[1]);
       });
 
+      initWaveSurfer();
+
+      // link listener; needs to post processed audio onto server before moving onto the next page
+      var harmonized_results_link = document.getElementById("harmonized_results_link");
+      harmonized_results_link.onclick = function() {
+         strData = bufferData.toString();
+         newData = ""
+         $.post("/harmonizeData", strData, function(data) {
+               newData = data;
+               //console.log("\nNewdata?: " + newData);
+               var newFloatData = new Float32Array(JSON.parse(newData));
+               var newChannelData = [];
+               newChannelData.push(newFloatData);
+
+               //console.log("\nNew float data?: " + newChannelData);
+
+               // clear before it gives it new data
+               recorder.clear();
+               
+               //recorder.setBuffer(newChannelData);
+
+               //createDownloadLink();
+            });
+
+      }
 
       try {
          // webkit shim

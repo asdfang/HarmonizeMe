@@ -14,6 +14,10 @@ def index():
 def harmonizer():
 	return render_template('example_simple_exportwav.html')
 
+@app.route('/harmonizedResults', methods=['GET', 'POST'])
+def harmonizedResults():
+	return render_template('harmonized_results.html')
+
 #testing with sin
 @app.route('/bufferData', methods=['GET', 'POST'])
 def bufferData():
@@ -49,8 +53,11 @@ def harmonizeData():
 		#convert to string
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
+		cache.set('harmonized_data', pythliststring)
 		return pythliststring
-		#return request.get_data() + ":response"
+	elif request.method =='GET':
+		return_data = cache.get('harmonized_data')
+		return return_data
 	else:
 		return "Normal"
 
@@ -65,7 +72,7 @@ def keyData():
 		cache.set('key_data', return_data) #set it again for /bufferData. works!
 		return return_data
 	else:
-		return "yes"
+		return "Normal"
 
 @app.route('/static/<path:path>')
 def send_js(path):
@@ -85,10 +92,10 @@ def processAudioWithSin(audio):
 	pythliststring = str(pythlist)
 	return pythliststring
 
-#not useful
+#oh. it is useful.
 def processAudioWithHarmonies(audio, tonic, mode):
 	array = np.fromstring(audio, sep=',')
-	print type(array)
+	#print type(array)
 	newaudio = harmonizeme(array, tonic, mode)
 	return newaudio
 
