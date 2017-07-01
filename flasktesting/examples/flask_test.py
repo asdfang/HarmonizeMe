@@ -42,7 +42,10 @@ def harmonizeData():
 		mode = int(string_array[1])
 		
 		audiodata = request.get_data()
-		#print "This is data", audiodata
+		original = np.fromstring(audiodata, sep=',')
+		original = original / np.max(np.abs(original)) #normalize
+		pythlist_original = original.tolist()
+		cache.set('original_audio', str(pythlist_original))
 
 		newdata = processAudioWithHarmonies(audiodata, tonic, mode)
 		#print newdata
@@ -57,6 +60,14 @@ def harmonizeData():
 		return pythliststring
 	elif request.method =='GET':
 		return_data = cache.get('harmonized_data')
+		return return_data
+	else:
+		return "Normal"
+
+@app.route('/originalAudio', methods=['GET'])
+def originalAudio():
+	if request.method == 'GET':
+		return_data = cache.get('original_audio')
 		return return_data
 	else:
 		return "Normal"

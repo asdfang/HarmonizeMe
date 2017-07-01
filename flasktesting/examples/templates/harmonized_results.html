@@ -66,15 +66,27 @@
                <button class="btn btn-info btn-space" onclick="stop(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
             </div>
          </div>
-            
+
+         <h4 style="text-align:center">Original sung audio:</h4>
+         <div class="jumbotron">
+            <div id="waveform2"></div> <br>
+            <div style="text-align:center">
+               <button id="playButton2" class="btn btn-info btn-space" onclick="play2(this);"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
+               <button class="btn btn-info btn-space" onclick="pause2(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
+               <button class="btn btn-info btn-space" onclick="stop2(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+            </div>
+         </div>
       </div>
 
       <script>
+         // anything with a "2" refers to the original audio. otherwise, it's the processed (harmonized) audio)
          var harmonized_audio;
-         var wavesurfer;
+         var original_audio;
+         var wavesurfer, wavesurfer2;
          var numChannels = 1;
          var sampleRate = 44100;
-         var replay = false;
+         var replay = false, replay2 = false;
+         var pB, pB2;
          // var audioCtx = new AudioContext();
          // var buffer;
 
@@ -83,14 +95,16 @@
                harmonized_audio = data;
                //console.log("\nNewdata?: " + newData);
                harmonized_audio = new Float32Array(JSON.parse(harmonized_audio));
-               var num_samples = harmonized_audio.length;
-
-               // console.log(harmonized_audio);
-               // buffer = audioCtx.createBuffer(1, num_samples, 44100);
 
                initWaveSurfer();
-
             });
+
+            $.get("/originalAudio", function(data) {
+               original_audio = data;
+               original_audio = new Float32Array(JSON.parse(original_audio));
+
+               initWaveSurfer2();
+            })
          }
 
 
@@ -123,7 +137,37 @@
                   pB.nextElementSibling.nextElementSibling.disabled = true;
                });
             });
+         }
 
+         function initWaveSurfer2() {
+            // turn Float32Array into normal javascript array
+            var arr = Array.prototype.slice.call(original_audio);
+            var dataview = encodeWAV(arr);
+            var audioBlob = new Blob([dataview], { type: 'audio/wav' });
+            // console.log(audioBlob);
+            //ar url = URL.createObjectURL(blob);
+
+            // console.log("jfsdklafjdlkas");
+            // console.log(JSON.stringify(blob));
+
+            wavesurfer2 = WaveSurfer.create({
+               container: '#waveform2',
+               scrollParent: true
+            });
+
+            wavesurfer2.loadBlob(audioBlob);
+            wavesurfer2.on('ready', function() {
+               console.log("WaveSurfer2 ready to play.");
+               wavesurfer2.on('finish', function() {
+                  replay2 = true;
+                  pB2 = document.getElementById("playButton");
+                  // enable play button when finished
+                  pB2.disabled = false;
+                  // disable pause and stop button when finished
+                  pB2.nextElementSibling.disabled = true;
+                  pB2.nextElementSibling.nextElementSibling.disabled = true;
+               });
+            });
          }
 
          function play(button) {
@@ -141,6 +185,21 @@
             wavesurfer.play();
          }
 
+         function play2(button) {
+            if (replay2) {
+               wavesurfer2.stop();
+               replay2 = false;
+            }
+            // disable Play button while playing
+            button.disabled = true;
+            // enable Pause button while playing
+            button.nextElementSibling.disabled = false;
+            // enable Stop button while playing
+            button.nextElementSibling.nextElementSibling.disabled = false;
+
+            wavesurfer2.play();
+         }
+
          function pause(button) {
             // enable Play button while paused
             button.previousElementSibling.disabled = false;
@@ -152,6 +211,17 @@
             wavesurfer.pause();
          }
 
+         function pause2(button) {
+            // enable Play button while paused
+            button.previousElementSibling.disabled = false;
+            // disable Pause button while paused
+            button.disabled = true;
+            // enable Stop button while paused
+            button.nextElementSibling.disabled = false;
+
+            wavesurfer2.pause();
+         }
+
          function stop(button) {
             // enable Play button while stopped
             button.previousElementSibling.previousElementSibling.disabled = false;
@@ -161,6 +231,17 @@
             button.disabled = true;
 
             wavesurfer.stop();
+         }
+
+         function stop2(button) {
+            // enable Play button while stopped
+            button.previousElementSibling.previousElementSibling.disabled = false;
+            // disable Pause button while stopped
+            button.previousElementSibling.disabled = true;
+            // disable Stop button while stopped
+            button.disabled = true;
+
+            wavesurfer2.stop();
          }
 
 
@@ -222,13 +303,5 @@
             return view;
          }
       </script>
-
-
-
-
-
-
-
-
    </body>
 </html>
