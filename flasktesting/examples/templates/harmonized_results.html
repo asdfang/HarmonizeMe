@@ -50,9 +50,6 @@
          <div class="navbar-header">
             <a href="#" class="navbar-brand"><span class="glyphicon glyphicon-music" aria-hidden="true"></span> HarmonizeMe</a>
          </div>
-         <ul class="nav navbar-nav">
-            <li><a href="#">Replacethis,formusictheory</a></li>
-         </ul>
       </nav>
 
       <div class="container">
@@ -64,6 +61,10 @@
                <button id="playButton" class="btn btn-info btn-space" onclick="play(this);"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
                <button class="btn btn-info btn-space" onclick="pause(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
                <button class="btn btn-info btn-space" onclick="stop(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+            <div id="download" style="text-align:center">
+               Here is a download link for the audio that contains your singing with harmonization: <br>
+               <a href="#" id="dl">placeholder</a>
+            </div>
             </div>
          </div>
 
@@ -74,6 +75,10 @@
                <button id="playButton2" class="btn btn-info btn-space" onclick="play2(this);"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
                <button class="btn btn-info btn-space" onclick="pause2(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
                <button class="btn btn-info btn-space" onclick="stop2(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+            </div>
+            <div id="download2" style="text-align:center">
+               Here is a download link for the audio that contains your original, non-harmonized singing: <br>
+               <a href="#" id="dl2">placeholder</a>
             </div>
          </div>
       </div>
@@ -87,6 +92,7 @@
          var sampleRate = 44100;
          var replay = false, replay2 = false;
          var pB, pB2;
+         var aB, aB2; // audioBlob, audioBlob2
          // var audioCtx = new AudioContext();
          // var buffer;
 
@@ -97,6 +103,8 @@
                harmonized_audio = new Float32Array(JSON.parse(harmonized_audio));
 
                initWaveSurfer();
+
+               makeDownloadLink();
             });
 
             $.get("/originalAudio", function(data) {
@@ -104,7 +112,9 @@
                original_audio = new Float32Array(JSON.parse(original_audio));
 
                initWaveSurfer2();
-            })
+
+               makeDownloadLink2();
+            });
          }
 
 
@@ -113,11 +123,7 @@
             var arr = Array.prototype.slice.call(harmonized_audio);
             var dataview = encodeWAV(arr);
             var audioBlob = new Blob([dataview], { type: 'audio/wav' });
-            // console.log(audioBlob);
-            //ar url = URL.createObjectURL(blob);
-
-            // console.log("jfsdklafjdlkas");
-            // console.log(JSON.stringify(blob));
+            aB = audioBlob;
 
             wavesurfer = WaveSurfer.create({
                container: '#waveform',
@@ -144,11 +150,7 @@
             var arr = Array.prototype.slice.call(original_audio);
             var dataview = encodeWAV(arr);
             var audioBlob = new Blob([dataview], { type: 'audio/wav' });
-            // console.log(audioBlob);
-            //ar url = URL.createObjectURL(blob);
-
-            // console.log("jfsdklafjdlkas");
-            // console.log(JSON.stringify(blob));
+            aB2 = audioBlob;
 
             wavesurfer2 = WaveSurfer.create({
                container: '#waveform2',
@@ -166,8 +168,11 @@
                   // disable pause and stop button when finished
                   pB2.nextElementSibling.disabled = true;
                   pB2.nextElementSibling.nextElementSibling.disabled = true;
+
                });
             });
+
+
          }
 
          function play(button) {
@@ -301,6 +306,22 @@
             floatTo16BitPCM(view, 44, samples);
 
             return view;
+         }
+
+         function makeDownloadLink() {
+            dl = document.getElementById('dl');
+            var url = URL.createObjectURL(aB);
+            dl.href = url;
+            dl.download = new Date().toISOString() + '.wav';
+            dl.innerHTML = dl.download;
+         }
+
+         function makeDownloadLink2() {
+            dl2 = document.getElementById('dl2');
+            var url = URL.createObjectURL(aB2);
+            dl2.href = url;
+            dl2.download = new Date().toISOString() + '.wav';
+            dl2.innerHTML = dl2.download;
          }
       </script>
    </body>
