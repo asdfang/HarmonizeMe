@@ -209,7 +209,12 @@ def harmonizeme(audio, tonic_input, mode_input):
 	pitchesmelody_verb = aubio_pitches(audio)
 	onset_samps = aubio_onsets(audio)
 
+	#if no onsets, return original audio. -- alert the user?
+	if len(onset_samps) == 0:
+		return audio
+
 	pitch_indices = []
+
 
 	#get rid of zero onset
 	onset_samps = delete_zeros(onset_samps)

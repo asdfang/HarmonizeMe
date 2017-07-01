@@ -43,7 +43,10 @@ def harmonizeData():
 		
 		audiodata = request.get_data()
 		original = np.fromstring(audiodata, sep=',')
-		original = original / np.max(np.abs(original)) #normalize
+		
+		#normalize
+		if np.max(np.abs(original)) > 1:
+			original = original / np.max(np.abs(original))
 		pythlist_original = original.tolist()
 		cache.set('original_audio', str(pythlist_original))
 
@@ -51,7 +54,8 @@ def harmonizeData():
 		#print newdata
 
 		#normalize
-		newdata = newdata / np.max(np.abs(newdata))
+		if np.max(np.abs(newdata)) > 1:
+			newdata = newdata / np.max(np.abs(newdata))
 
 		#convert to string
 		pythlist = newdata.tolist()
