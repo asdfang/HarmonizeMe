@@ -61,9 +61,9 @@
                <button id="playButton" class="btn btn-info btn-space" onclick="play(this);"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
                <button class="btn btn-info btn-space" onclick="pause(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
                <button class="btn btn-info btn-space" onclick="stop(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
-            <div id="download" style="text-align:center">
-               Here is a download link for the audio that contains your singing with harmonization: <br>
-               <a href="#" id="dl">placeholder</a>
+            <div id="download" style="text-align:center"> <br>
+<!-- Use fewer words...               Here is a download link for the audio that contains your singing with harmonization: <br>
+ -->               <a href="#" id="dl" class="btn btn-primary btn-lg">Download harmonized file!</a>
             </div>
             </div>
          </div>
@@ -76,9 +76,9 @@
                <button class="btn btn-info btn-space" onclick="pause2(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
                <button class="btn btn-info btn-space" onclick="stop2(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
             </div>
-            <div id="download2" style="text-align:center">
-               Here is a download link for the audio that contains your original, non-harmonized singing: <br>
-               <a href="#" id="dl2">placeholder</a>
+            <div id="download2" style="text-align:center"> <br>
+<!--                Here is a download link for the audio that contains your original, non-harmonized singing: <br>
+ -->               <a href="#" id="dl2" class="btn btn-primary btn-lg">Download original file!</a>
             </div>
          </div>
       </div>
@@ -312,16 +312,15 @@
             dl = document.getElementById('dl');
             var url = URL.createObjectURL(aB);
             dl.href = url;
-            dl.download = new Date().toISOString() + '.wav';
-            dl.innerHTML = dl.download;
+            dl.download = "harmonized.wav"
          }
 
          function makeDownloadLink2() {
             dl2 = document.getElementById('dl2');
             var url = URL.createObjectURL(aB2);
             dl2.href = url;
-            dl2.download = new Date().toISOString() + '.wav';
-            dl2.innerHTML = dl2.download;
+            dl2.download = "original.wav"
+
          }
       </script>
    </body>
