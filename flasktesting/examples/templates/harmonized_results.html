@@ -39,6 +39,14 @@
           br {
             line-height: 150%;
           }
+         .btn-xlarge {
+            padding: 18px 28px;
+            font-size: 22px;
+            line-height: normal;
+            -webkit-border-radius: 8px;
+               -moz-border-radius: 8px;
+                  border-radius: 8px;
+         }
          .btn-space {
             margin-left: 1px;
             margin-right: 1px;
@@ -53,7 +61,7 @@
       </nav>
 
       <div class="container">
-         <h1>Hear your harmonization!</h1>
+         <h3 align="center">Hear your harmonization!</h3>
 
          <div class="jumbotron">
             <div id="waveform"></div> <br>
@@ -67,7 +75,6 @@
             </div>
             </div>
          </div>
-         <br><br>
          <h4 style="text-align:center">Original sung audio:</h4>
          <div class="jumbotron">
             <div id="waveform2"></div> <br>
@@ -80,6 +87,9 @@
 <!--                Here is a download link for the audio that contains your original, non-harmonized singing: <br>
  -->               <a href="#" id="dl2" class="btn btn-primary btn-lg">Download original file!</a>
             </div>
+         </div>
+         <div style="text-align:center">
+            <a href="{{ url_for('index') }}" id="restartLink" class="btn btn-success btn-xlarge btn-space">Start Over!</a>
          </div>
       </div>
 
@@ -127,7 +137,8 @@
 
             wavesurfer = WaveSurfer.create({
                container: '#waveform',
-               scrollParent: true
+               scrollParent: true,
+               height: 64
             });
             
             wavesurfer.loadBlob(audioBlob);
@@ -154,7 +165,8 @@
 
             wavesurfer2 = WaveSurfer.create({
                container: '#waveform2',
-               scrollParent: true
+               scrollParent: true,
+               height: 64
             });
 
             wavesurfer2.loadBlob(audioBlob);
