@@ -67,7 +67,7 @@
             </div>
             </div>
          </div>
-
+         <br><br>
          <h4 style="text-align:center">Original sung audio:</h4>
          <div class="jumbotron">
             <div id="waveform2"></div> <br>
@@ -129,7 +129,7 @@
                container: '#waveform',
                scrollParent: true
             });
-
+            
             wavesurfer.loadBlob(audioBlob);
             wavesurfer.on('ready', function() {
                console.log("WaveSurfer ready to play.");

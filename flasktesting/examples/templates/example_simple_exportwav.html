@@ -147,7 +147,7 @@
          <h3 style="text-align:center;">Instructions:</h3>
          <p style="font-size:16px; text-align:center;">
             "Record" begins recording, so start singing loudly! "Pause" lets you stop and continue recording later. <br>
-            "Stop" lets you completely stop and start over if needed. If you're satisfied, press "Harmonize!" <br>
+            "Stop" lets you completely stop and start over if needed. If you're satisfied, press "Harmonize Me!" <br>
          </p> 
 
          <div id="recordingButtons" style="text-align:center">
@@ -156,7 +156,7 @@
             <button class="btn btn-info btn-space" onclick="stopRecording(this);" style="margin-right:64px" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
             <!-- <button class="btn btn-primary" onclick="harmonize(this);">Harmonize!!</button> <br><br> -->
             <!-- testing: -->
-            <a id="harmonized_results_link" href="{{ url_for('harmonizedResults') }}" class="btn btn-primary btn-xlarge disabled">Harmonize!!</a> 
+            <a id="harmonized_results_link" href="{{ url_for('harmonizedResults') }}" class="btn btn-primary btn-xlarge disabled">Harmonize Me!!</a> 
 
             <br> <br>
             <!-- hidden at first -->
@@ -207,7 +207,9 @@
    var wf; //waveform
    var pB; //playButton
    var rB; //recordButton
-   var p;
+   var p; // a paragraph
+   var l; // harmonized_results_link
+   var harmonized_clicked_once = false;
 
 
    function linkIsDisabled(classString) {
@@ -237,7 +239,6 @@
       // enable Stop button while recording
       button.nextElementSibling.nextElementSibling.disabled = false;
       // disable Harmonize button while recording
-      var l = document.getElementById("harmonized_results_link");
       if (!linkIsDisabled(l.className)) {
          l.className = l.className + " disabled";
       }
@@ -254,7 +255,6 @@
       // enable Stop button while paused
       button.nextElementSibling.disabled = false;
       // disable Harmonize button while paused
-      var l = document.getElementById("harmonized_results_link");
       if (!linkIsDisabled(l.className)) {
          l.className = l.className + " disabled";
       }  
@@ -270,7 +270,6 @@
       // disable Stop button while stopped
       button.disabled = true;
       // enable Harmonize button ONLY while stopped
-      var l = document.getElementById("harmonized_results_link");
       if (linkIsDisabled(l.className)) {
          l.className = l.className.slice(0, l.className.length-9);
       }
@@ -357,8 +356,6 @@
       console.log(bufferData);
    }
  
-
-
    function playKey(button) {
       button.disabled = true;
       button.nextElementSibling.disabled = false;
@@ -470,6 +467,7 @@
       pB = document.getElementById('playButton');
       p = document.getElementById('playRecordedInstructions');
       rB = document.getElementById('recordButton');
+      l = document.getElementById('harmonized_results_link');
 
       // getting tonic and mode from previous page
       $.get("/keyData", function(data) {
@@ -482,10 +480,15 @@
 
       // link listener; needs to post processed audio onto server before moving onto the next page
       var harmonized_results_link = document.getElementById("harmonized_results_link");
+
       harmonized_results_link.onclick = function() {
-         strData = bufferData.toString();
-         newData = ""
-         $.post("/harmonizeData", strData, function(data) {
+         // to avoid having multiple clicks to it make it blow up, but to also not completely disable the link.
+         if (!harmonized_clicked_once)
+         {
+            l.innerHTML = "Harmonizing now...";
+            strData = bufferData.toString();
+            newData = ""
+            $.post("/harmonizeData", strData, function(data) {
                newData = data;
                var newFloatData = new Float32Array(JSON.parse(newData));
                var newChannelData = [];
@@ -496,6 +499,8 @@
                
                //recorder.setBuffer(newChannelData);
             });
+         }
+         harmonized_clicked_once = true;
 
       }
 

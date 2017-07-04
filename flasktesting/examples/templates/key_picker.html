@@ -217,7 +217,9 @@
 
 
          function playKey(button) {
+            // disable Play button while playing
             button.disabled = true;
+            // enable Stop button while playing
             button.nextElementSibling.disabled = false;
             var tonic_e = document.getElementById("tonic_picker");
             var mode_e = document.getElementById("mode_picker");
@@ -234,22 +236,19 @@
             //confirm(message);
             var html_audio = document.getElementById(file_name);
 
-            if (curr_audio != null) { // not null, something is playing
+            // button is disabled now, this shouldn't happen.
+            if (curr_audio != null) { // not null, something is playing;
                curr_audio.pause();
                curr_audio.currentTime = 0;
-               curr_audio = html_audio;
-               curr_audio.play()
-               curr_audio.onended = function() {
-                  curr_audio = null;
-               };
             }
-            else { // nothing is playing
-                  curr_audio = html_audio;
-                  curr_audio.play();
-                  curr_audio.onended = function() {
-                     curr_audio = null;
-               };
-            }
+            curr_audio = html_audio;
+            curr_audio.play()
+            curr_audio.onended = function() {
+               curr_audio = null;
+               // enable Play and disable Stop buttons when done
+               button.disabled = false;
+               button.nextElementSibling.disabled = true;
+            };
          }
 
          function stopKey(button) {
