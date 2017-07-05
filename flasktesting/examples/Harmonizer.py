@@ -176,7 +176,7 @@ def getpitches(filename, samplerate):
 	return pitches, onsets
 
 '''
-Call harmonizeme to harmonize the audio, given in an nd.array of 
+Call harmonizeme to harmonize the audio, given in an nd.array
 '''
 
 '''
@@ -206,6 +206,7 @@ def harmonizeme(audio, tonic_input, mode_input):
 	audiolist = audio.tolist() #is this useful?
 
 	audio = audio.astype(np.float32)
+	#aubio results
 	pitchesmelody_verb = aubio_pitches(audio)
 	onset_samps = aubio_onsets(audio)
 
@@ -214,7 +215,6 @@ def harmonizeme(audio, tonic_input, mode_input):
 		return audio
 
 	pitch_indices = []
-
 
 	#get rid of zero onset
 	onset_samps = delete_zeros(onset_samps)
@@ -237,9 +237,11 @@ def harmonizeme(audio, tonic_input, mode_input):
 
 
 	melodysd = []
+	melody_midi = [] #for plotting
 	pitchspliced.append(pitchesmelody_verb[pitch_indices[-1]:len(pitchesmelody_verb)])
 	for ii in range(len(pitchspliced)):
 		determined_pitch = determine_pitch(pitchspliced[ii])
+		melody_midi.append(determined_pitch)
 		melodysd.append(PitchConverter.pitch_in_sd(determined_pitch, tonic))
 
 	'''
@@ -258,7 +260,15 @@ def harmonizeme(audio, tonic_input, mode_input):
 
 	completedaudio, realized = harmonize(melodysd, tonic, audiospliced, mode)
 
-	return completedaudio
+
+	#convert samps to time; for plotting
+	onset_times = []
+	for ii in range(len(onset_samps)):
+		onset_times.append(float(onset_samps[ii]) / float(sampleRate))
+
+	#delete first of melody_midi (to delete the starting silence)
+	del melody_midi[0]
+	return completedaudio, pitchesmelody_verb, melody_midi, onset_times
 
 
 
