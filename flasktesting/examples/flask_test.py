@@ -1,15 +1,26 @@
-from flask import Flask, render_template, request, send_from_directory, make_response
+from flask import Flask, render_template, request, send_from_directory, make_response, redirect, url_for, session, Markup, flash
+#testing upload
+import os
+from werkzeug.utils import secure_filename
 from werkzeug.contrib.cache import SimpleCache
 from Harmonizer import *
+import librosa
 import numpy as np
 np.set_printoptions(threshold='nan')
 
 app = Flask(__name__, static_url_path='')
 
 cache = SimpleCache()
+UPLOAD_FOLDER = 'uploads'
+ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.secret_key = 'as@FJ$ZFJO(DI%$T'
+app.config['SESSION_TYPE'] = 'filesystem'
+
 
 @app.route('/')
 def index():
+	session['file_uploaded'] = False
 	return render_template('key_picker.html')
 
 @app.route('/harmonizer', methods=['GET', 'POST'])
@@ -19,20 +30,6 @@ def harmonizer():
 @app.route('/harmonizedResults', methods=['GET', 'POST'])
 def harmonizedResults():
 	return render_template('harmonized_results.html')
-
-#testing with sin
-@app.route('/bufferData', methods=['GET', 'POST'])
-def bufferData():
-	if request.method == 'POST':
-		audiodata = request.get_data()
-		#print "This is data", audiodata
-
-		newdata = processAudioWithSin(audiodata)
-		#print newdata
-		return newdata
-		#return request.get_data() + ":response"
-	else:
-		return "Normal"
 
 #harmonizing
 @app.route('/harmonizeData', methods=['GET', 'POST'])
@@ -44,7 +41,8 @@ def harmonizeData():
 		mode = int(string_array[1])
 		
 		audiodata = request.get_data()
-		original = np.fromstring(audiodata, sep=',')
+		audiodata = np.fromstring(audiodata, sep=',')
+		original = audiodata
 		
 		#normalize
 		if np.max(np.abs(original)) > 1:
@@ -70,6 +68,38 @@ def harmonizeData():
 		return return_data
 	else:
 		return "Normal"
+
+@app.route('/harmonizeUploaded', methods=['GET', 'POST'])
+def harmonizedUploaded():
+	if request.method == 'POST':
+		dummy = request.get_data()
+		string_data = cache.get('key_data')
+		string_array = string_data.split(',')
+		tonic = int(string_array[0])
+		mode = int(string_array[1])
+
+		audiodata = cache.get('original_audio_np')
+		original = audiodata
+
+		#normalize
+		if np.max(np.abs(original)) > 1:
+			original = original / np.max(np.abs(original))
+		pythlist_original = original.tolist()
+		cache.set('original_audio', str(pythlist_original))
+
+		newdata = processAudioWithHarmonies(audiodata, tonic, mode)
+		#normalize
+		if np.max(np.abs(newdata)) > 1:
+			newdata = newdata / np.max(np.abs(newdata))
+
+		pythlist = newdata.tolist()
+		pythliststring = str(pythlist)
+		cache.set('harmonized_data', pythliststring)
+		return pythliststring
+	else:
+		return "Normal"
+
+
 
 @app.route('/originalAudio', methods=['GET'])
 def originalAudio():
@@ -97,23 +127,10 @@ def keyData():
 def send_js(path):
 	return send_from_directory('static', path)	
 
-def processAudioWithSin(audio):
-	array = np.fromstring(audio, sep=',')
-
-	a440 = build_sinwave(array.size, 440.0, 44100.0)
-
-	audiowithsin = array + a440
-	#normalize:
-	audiowithsin = audiowithsin / np.max(np.abs(audiowithsin))
-
-	#convert to string:
-	pythlist = audiowithsin.tolist()
-	pythliststring = str(pythlist)
-	return pythliststring
-
 #oh. it is useful.
+#takes in audio as np.array
 def processAudioWithHarmonies(audio, tonic, mode):
-	array = np.fromstring(audio, sep=',')
+	array = audio
 	cache.set('original_np', array)
 	#print type(array)
 	newaudio, pitchesmelody_verb, melody_midi, onset_times = harmonizeme(array, tonic, mode)
@@ -122,13 +139,47 @@ def processAudioWithHarmonies(audio, tonic, mode):
 	cache.set('onset_times', onset_times)
 	return newaudio
 
-def build_sinwave(num_samples, freq, samplerate):
-	t = np.arange(0, num_samples)/samplerate
-	x = np.sin(2*np.pi*freq*t)
-	return x
+def allowed_file(filename):
+	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+
+#uploads file
+@app.route('/uploader', methods=['GET', 'POST'])
+def upload_file():
+	if request.method == 'POST':
+		# check if the post request has the file part
+		if 'file' not in request.files:
+			flash('No file part')
+			return redirect(request.url)
+		f = request.files['file']
+		# if user does not select file, browser also
+		# submit a empty part without filename
+		if f.filename == '':
+			flash('No selected file')
+			return redirect(request.url)
+		if f and allowed_file(f.filename):
+			filename = secure_filename(f.filename)
+			f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			original_audio, sr = librosa.core.load(os.path.join(app.config['UPLOAD_FOLDER'], filename), sr=44100)
+			cache.set("original_audio_np", original_audio)
+			os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
+			session['file_uploaded'] = True
+			name_display = Markup(filename)
+			flash(name_display, category='name_display')
+			return render_template('example_simple_exportwav.html')
+
+#gets uploaded file
+@app.route('/uploads/<filename>')
+def uploaded_file(filename):
+	return send_from_directory(app.config['UPLOAD_FOLDER'], filename)
+
+@app.route('/reload')
+def reload():
+	session['file_uploaded'] = False
+	return render_template('example_simple_exportwav.html')
+
 
 #real matplot
-@app.route("/plot")
+@app.route('/plot')
 def plot():
 	import StringIO
 
@@ -223,35 +274,24 @@ def plot():
 	response = make_response(png_output.getvalue())
 	response.headers['Content-Type'] = 'image/png'
 	return response
-	
 
-#matplot test
-@app.route("/plottest")
-def plottest():
-	import datetime
-	import StringIO
-	import random
 
-	from matplotlib.backends.backend_agg import FigureCanvasAgg as FigureCanvas
-	from matplotlib.figure import Figure
-	from matplotlib.dates import DateFormatter
+#sinwave stuff
+def build_sinwave(num_samples, freq, samplerate):
+	t = np.arange(0, num_samples)/samplerate
+	x = np.sin(2*np.pi*freq*t)
+	return x
 
-	fig=Figure()
-	ax=fig.add_subplot(111)
-	x=[]
-	y=[]
-	now=datetime.datetime.now()
-	delta=datetime.timedelta(days=1)
-	for i in range(10):
-		x.append(now)
-		now+=delta
-		y.append(random.randint(0, 1000))
-	ax.plot_date(x, y, '-')
-	ax.xaxis.set_major_formatter(DateFormatter('%Y-%m-%d'))
-	fig.autofmt_xdate()
-	canvas=FigureCanvas(fig)
-	png_output = StringIO.StringIO()
-	canvas.print_png(png_output)
-	response=make_response(png_output.getvalue())
-	response.headers['Content-Type'] = 'image/png'
-	return response
+def processAudioWithSin(audio):
+	array = np.fromstring(audio, sep=',')
+
+	a440 = build_sinwave(array.size, 440.0, 44100.0)
+
+	audiowithsin = array + a440
+	#normalize:
+	audiowithsin = audiowithsin / np.max(np.abs(audiowithsin))
+
+	#convert to string:
+	pythlist = audiowithsin.tolist()
+	pythliststring = str(pythlist)
+	return pythliststring

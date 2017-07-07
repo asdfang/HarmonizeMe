@@ -171,8 +171,29 @@
             </div>
 
          </div>
-         <br> <br>
-         <div id="replayKey" style="text-align:center"> 
+         <br>
+         <!-- TESTING UPLOADING START -->
+         <div class="form-group" id="upload" style="text-align:center">
+            <p align="center">Upload a file if you have already recorded one before!</p>
+            {% if not session.file_uploaded %}
+            <form action="http://127.0.0.1:5000/uploader" method="POST" enctype="multipart/form-data">
+               <center><input class="form-control-file" type="file" name="file"></input></center>
+               <input class="btn btn-primary btn-space" type="submit" value="Upload" />
+            </form>
+            {% else %}
+            Uploaded: {% with messages = get_flashed_messages(category_filter=["name_display"]) %} {{ messages[0] }} {% endwith %}
+            <form action="http://127.0.0.1:5000/reload">
+               <input class="btn btn-info btn-space" type="submit" value="Upload another file" \>
+<!--                <a id="harmonized_upload_link" href="{{ url_for('harmonizedResults') }}" class="btn btn-primary btn-xlarge">Harmonize Me!!</a>
+ -->           
+            </form>
+            <br>
+            <button id="harmonized_upload_link" onclick="harmonizeUpload();" class="btn btn-primary btn-xlarge">Harmonize Me!!</a>
+            {% endif %}
+         </div>
+
+         <!-- TESTING UPLOADING END -->
+         <div id="replayKey" style="text-align:center">
             <p align="center">If you need to re-listen to your key, click the button below:</p>
             <button class="btn btn-success btn-space" type="button" onclick="playKey(this)"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Replay key!</button>
             <button class="btn btn-success btn-space" type="button" onclick="stopKey(this)" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
@@ -209,7 +230,9 @@
    var rB; //recordButton
    var p; // a paragraph
    var l; // harmonized_results_link
+   var ull; //harmonized_upload_link
    var harmonized_clicked_once = false;
+   var harmonized_upload_clicked_once = false;
 
 
    function linkIsDisabled(classString) {
@@ -458,6 +481,21 @@
       });
    }
 
+   function harmonizeUpload() {
+      ull = document.getElementById('harmonized_upload_link');
+      if (!harmonized_upload_clicked_once)
+      {
+         ull.innerHTML = "Harmonizing now...";
+         dummy = "blah";
+         dummyData = "";
+         $.post("/harmonizeUploaded", dummy, function(data) {
+            dummyData = data;
+         });
+      }
+      window.location.href = "{{ url_for('harmonizedResults') }}";
+      harmonized_upload_clicked_once = true;
+   }
+
    window.onload = function init() {
       console.log("Console messages starting with __ signify logging from the recorder");
 
@@ -480,6 +518,7 @@
 
       // link listener; needs to post processed audio onto server before moving onto the next page
       var harmonized_results_link = document.getElementById("harmonized_results_link");
+
 
       harmonized_results_link.onclick = function() {
          // to avoid having multiple clicks to it make it blow up, but to also not completely disable the link.
