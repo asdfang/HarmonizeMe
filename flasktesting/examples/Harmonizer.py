@@ -32,7 +32,6 @@ methods = ['yinfft']
 hopSize = 128
 frameSize = 2048
 sampleRate = 44100
-HOP_SIZE = 512
 
 def run_pitch(p, input_vec):
     cands = []
@@ -93,87 +92,72 @@ def aubio_onsets(audio):
 	return onset_samps
 
 
-
-
-
 '''
 Get a note in MIDI (rounded to nearest semitone) given a note represented by array of MIDIs or sound file.
-	Takes in: (string filename) or (float array_of_doubles)
+	Takes in: float array_of_doubles
 	Output: (float midi_num)
 '''
-def determine_pitch(pitchfile): #it will either be a filename or a numpy array
-	if isinstance(pitchfile, str): #if it's a file
-		pitches, onsets = getpitches(pitchfile, 44100)
-		notes = delete_zeros(pitches)
-	else: #if it's a numpy array
-		notes = delete_zeros(pitchfile) #sorry this is named badly
-
+def determine_pitch(array):
+	notes = delete_zeros_ones(array)
 	midi_num = numpy.around(numpy.median(notes))
-	
-	return midi_num #midi_num is the tonic
+	return float(midi_num)
 
-'''
-Deletes zeros from a list
-	Takes in: ([double] alist)
-	Outputs: ([double] new_list))
-'''
-def delete_zeros(alist):
+def delete_zeros_ones(alist):
 	newlist = []
 	for element in alist:
-		if element != 0.0:
+		if element != 0.0 and element != -1.0:
 			newlist.append(element)
-	return newlist
+	return np.array(newlist)
 
+# '''
+# Gets pitches every HOP_SIZE (512) in MIDI, and onsets in samples from a filename of a sound file
+# 	Takes in: (string filename), (double samplerate)
+# 	Output: ([double] midi_numbers), ([int] onset_in_samples)
+# --> NEED a version where it can just take in a float array
+# '''
+# def getpitches(filename, samplerate):
 
-'''
-Gets pitches every HOP_SIZE (512) in MIDI, and onsets in samples from a filename of a sound file
-	Takes in: (string filename), (double samplerate)
-	Output: ([double] midi_numbers), ([int] onset_in_samples)
---> NEED a version where it can just take in a float array
-'''
-def getpitches(filename, samplerate):
+# 	#downsample = 1
+# 	#samplerate = 44100 / downsample	
+# 	win_s = 4096 / downsample # fft size
+# 	hop_s = HOP_SIZE  / downsample # hop size
 
-	#downsample = 1
-	#samplerate = 44100 / downsample	
-	win_s = 4096 / downsample # fft size
-	hop_s = HOP_SIZE  / downsample # hop size
+# 	s = source(filename, samplerate, hop_s)
+# 	samplerate = s.samplerate
 
-	s = source(filename, samplerate, hop_s)
-	samplerate = s.samplerate
+# 	tolerance = 0.8
 
-	tolerance = 0.8
+# 	pitch_o = pitch("yin", win_s, hop_s, samplerate)
+# 	pitch_o.set_unit("midi")
+# 	pitch_o.set_tolerance(tolerance)
 
-	pitch_o = pitch("yin", win_s, hop_s, samplerate)
-	pitch_o.set_unit("midi")
-	pitch_o.set_tolerance(tolerance)
+# 	o = onset("default", win_s, hop_s, samplerate)
+# 	onsets = []
 
-	o = onset("default", win_s, hop_s, samplerate)
-	onsets = []
+# 	pitches = []
+# 	confidences = []
+# 	#number = 0
+# 	# total number of frames read
+# 	total_frames = 0
+# 	while True:
+# 	    samples, read = s()
+# 	    pitch1 = pitch_o(samples)[0]
+# 	    #pitch = int(round(pitch))
+# 	    confidence = pitch_o.get_confidence()
+# 	    if o(samples):
+#         	# print "%f" % o.get_last_s()
+#         	onsets.append(o.get_last())
+# 	    #if confidence < 0.8: pitch = 0.
+# 	    #print "%f %f %f" % (total_frames / float(samplerate), pitch, confidence)
+# 	    pitches += [pitch1]
+# 	    confidences += [confidence]
+# 	    total_frames += read
+# 	    #number = number + 1
+# 	    if read < hop_s: break
 
-	pitches = []
-	confidences = []
-	#number = 0
-	# total number of frames read
-	total_frames = 0
-	while True:
-	    samples, read = s()
-	    pitch1 = pitch_o(samples)[0]
-	    #pitch = int(round(pitch))
-	    confidence = pitch_o.get_confidence()
-	    if o(samples):
-        	# print "%f" % o.get_last_s()
-        	onsets.append(o.get_last())
-	    #if confidence < 0.8: pitch = 0.
-	    #print "%f %f %f" % (total_frames / float(samplerate), pitch, confidence)
-	    pitches += [pitch1]
-	    confidences += [confidence]
-	    total_frames += read
-	    #number = number + 1
-	    if read < hop_s: break
+# 	if 0: sys.exit(0)
 
-	if 0: sys.exit(0)
-
-	return pitches, onsets
+# 	return pitches, onsets
 
 '''
 Call harmonizeme to harmonize the audio, given in an nd.array
@@ -199,13 +183,12 @@ def harmonizeme(audio, tonic_input, mode_input, shift_input):
 	tonic = tonic_input*1.0
 	mode = int(mode_input) #what type is mode_input?
 
-	#expitch = determine_pitch(melodyfilename) #not doing just a single pitch anymore
 	#print 'Tonic midi number:'
 	#print tonic
 
-	audiolist = audio.tolist() #is this useful?
-
+	audiolist = audio.tolist() #is this useful? apparently
 	audio = audio.astype(np.float32)
+
 	#aubio results
 	pitchesmelody_verb = aubio_pitches(audio)
 	onset_samps = aubio_onsets(audio)
@@ -217,10 +200,10 @@ def harmonizeme(audio, tonic_input, mode_input, shift_input):
 	pitch_indices = []
 
 	#get rid of zero onset
-	onset_samps = delete_zeros(onset_samps)
+	onset_samps = delete_zeros_ones(onset_samps)
 
 	for ii in range(len(onset_samps)):
-		pitch_indices.append(numpy.around(onset_samps[ii] / HOP_SIZE))
+		pitch_indices.append(numpy.around(onset_samps[ii] / hopSize))
 
 	'''
 	splicing the pitch array
@@ -234,11 +217,11 @@ def harmonizeme(audio, tonic_input, mode_input, shift_input):
 		y = pitch_indices[ii + 1]
 		pitchspliced.append(pitchesmelody_verb[x:y])
 	#getting the last note
+	pitchspliced.append(pitchesmelody_verb[pitch_indices[-1]:len(pitchesmelody_verb)])
 
 
 	melodysd = []
 	melody_midi = [] #for plotting
-	pitchspliced.append(pitchesmelody_verb[pitch_indices[-1]:len(pitchesmelody_verb)])
 	for ii in range(len(pitchspliced)):
 		determined_pitch = determine_pitch(pitchspliced[ii])
 		melody_midi.append(determined_pitch)
@@ -260,7 +243,6 @@ def harmonizeme(audio, tonic_input, mode_input, shift_input):
 
 	completedaudio, realized = harmonize(melodysd, tonic, audiospliced, mode, shift_input)
 
-
 	#convert samps to time; for plotting
 	onset_times = []
 	for ii in range(len(onset_samps)):
@@ -268,8 +250,14 @@ def harmonizeme(audio, tonic_input, mode_input, shift_input):
 
 	#delete first of melody_midi (to delete the starting silence)
 	del melody_midi[0]
-	return completedaudio, pitchesmelody_verb, melody_midi, onset_times
 
+
+	print "Melody in midi: " + str(melody_midi)
+	rounded_onsets = []
+	for onset in onset_times:
+		rounded_onsets.append(round(onset, 2))
+	print "Onset times (seconds): " + str(rounded_onsets)
+	return completedaudio, pitchesmelody_verb, melody_midi, onset_times
 
 
 '''
@@ -292,13 +280,13 @@ Please enter a file name for your output file (include .wav):
 '''
 def harmonize(melody, tonic, splicedaudio, mode, shift):
 	prog_creater = ProgressionCreater(melody, mode, shift)
-	realized = prog_creater.get_progression_semitones()
+	realized, realized_RN = prog_creater.get_progression_semitones()
 	'''
 	for pitch, chord_choice in zip(melody, progression):
 		realized.append(fill_chord(pitch, chord_choice))
 	'''
-	#print 'Here is your random progression: '
-	#print realized
+	print 'Here is your random progression: '
+	print realized_RN
 	print 'Here is your random progression in halfsteps away from melodic note: '
 	prog_hs = realized
 	print prog_hs
@@ -319,22 +307,4 @@ def harmonize(melody, tonic, splicedaudio, mode, shift):
 		#complete.append(soundingchord)
 		complete = numpy.concatenate((complete, soundingchord))
 
-	#complete = (numpy.array(complete)).flatten()
-	#outputname = str(raw_input('Please enter a file name for your output file (include .wav): '))
-	#librosa.output.write_wav(outputname, complete, 44100)
-
 	return complete, realized
-
-#has this above:
-#tonic = determine_pitch(filename)
-#expitch = determine_pitch(melodyfilename)
-#
-
-#print pitch_in_sd(expitch, tonic)
-
-
-#running example
-#ex1_melody = []
-#ex1_melody.append(pitch_in_sd(expitch, tonic))
-#print 'This is your melody in scale degrees (ignore 0s)'
-#print melodysd

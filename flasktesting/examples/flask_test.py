@@ -141,7 +141,7 @@ def shiftData():
 
 @app.route('/static/<path:path>')
 def send_js(path):
-	return send_from_directory('static', path)	
+	return send_from_directory('static', path)
 
 #oh. it is useful.
 #takes in audio as np.array
@@ -224,9 +224,7 @@ def plot():
 	pitchesmelody_verb = cache.get('pitchesmelody_verb')
 	melody_midi = cache.get('melody_midi')
 	onset_times = cache.get('onset_times')
-	print "asdf"
-	print melody_midi
-	print onset_times
+
 
 	#num timestamps = num results from detector
 	dur = librosa.get_duration(original_np, sr=sampleRate) #in seconds

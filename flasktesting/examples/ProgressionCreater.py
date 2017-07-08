@@ -39,14 +39,14 @@ class ProgressionCreater:
 	'''
 	def get_progression_semitones(self):
 		progression_semitones = []
-		progression = self.get_progression_RN()
+		progression_RN = self.get_progression_RN()
 
 		for ii in range(0, len(self.melody_SD)):
-			chord_SD = self.fill_chord(self.melody_SD[ii], progression[ii])
+			chord_SD = self.fill_chord(self.melody_SD[ii], progression_RN[ii])
 			chord_semitones = self.chord_sd_to_semitones(chord_SD, self.progression_mode)
 			progression_semitones.append(chord_semitones)
 
-		return progression_semitones
+		return progression_semitones, progression_RN
 
 
 	'''
