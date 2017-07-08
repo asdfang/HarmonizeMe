@@ -257,6 +257,7 @@
       recorder && recorder.record();
       // disable Record button while recording
       button.disabled = true;
+      button.innerHTML = '<span class="glyphicon glyphicon-record" aria-hidden="true"></span> Recording...';
       // enable Pause button while recording
       button.nextElementSibling.disabled = false;
       // enable Stop button while recording
@@ -273,6 +274,7 @@
       recorder && recorder.stop();
       // enable Record button while paused
       button.previousElementSibling.disabled = false;
+      button.previousElementSibling.innerHTML = '<span class="glyphicon glyphicon-record" aria-hidden="true"></span> Record';
       // disable Pause button while paused
       button.disabled = true;
       // enable Stop button while paused
@@ -288,6 +290,7 @@
       recorder && recorder.stop();
       // enable Record button while stopped
       button.previousElementSibling.previousElementSibling.disabled = false;
+      button.previousElementSibling.previousElementSibling.innerHTML = '<span class="glyphicon glyphicon-record" aria-hidden="true"></span> Record';
       // disable Pause button while stopped
       button.previousElementSibling.disabled = true;
       // disable Stop button while stopped
