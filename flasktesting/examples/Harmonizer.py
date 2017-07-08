@@ -192,7 +192,7 @@ samplerate = 44100 / downsample
 if len( sys.argv ) > 4: samplerate = int(sys.argv[4])
 '''
 
-def harmonizeme(audio, tonic_input, mode_input):
+def harmonizeme(audio, tonic_input, mode_input, shift_input):
 	'''
 	GETTING TONIC AND EXPITCH
 	'''
@@ -258,7 +258,7 @@ def harmonizeme(audio, tonic_input, mode_input):
 	#getting the last note
 	audiospliced.append(audiomelody[onset_samps[-1]:len(audiomelody)])
 
-	completedaudio, realized = harmonize(melodysd, tonic, audiospliced, mode)
+	completedaudio, realized = harmonize(melodysd, tonic, audiospliced, mode, shift_input)
 
 
 	#convert samps to time; for plotting
@@ -290,8 +290,8 @@ Here is your random progression in halfsteps away from melodic note:
 [[0, -5, -8], [0, -3, -7], [0, -9, -16], [0, -3, -7], [0, -8, -12], [0, -4, -16], [0, -3, -7], [0, -8, -12], [0, -9, -12], [0, -4, -16], [0, -8, -3], [0, -7, -3], [0, -3, -7]]
 Please enter a file name for your output file (include .wav): 
 '''
-def harmonize(melody, tonic, splicedaudio, mode):
-	prog_creater = ProgressionCreater(melody, mode)
+def harmonize(melody, tonic, splicedaudio, mode, shift):
+	prog_creater = ProgressionCreater(melody, mode, shift)
 	realized = prog_creater.get_progression_semitones()
 	'''
 	for pitch, chord_choice in zip(melody, progression):

@@ -36,10 +36,14 @@ def harmonizedResults():
 @app.route('/harmonizeData', methods=['GET', 'POST'])
 def harmonizeData():
 	if request.method == 'POST':
+		#key data
 		string_data = cache.get('key_data')
 		string_array = string_data.split(',')
 		tonic = int(string_array[0])
 		mode = int(string_array[1])
+
+		#shift data
+		shift_data = cache.get('shift_data')
 		
 		audiodata = request.get_data()
 		audiodata = np.fromstring(audiodata, sep=',')
@@ -51,7 +55,7 @@ def harmonizeData():
 		pythlist_original = original.tolist()
 		cache.set('original_audio', str(pythlist_original))
 
-		newdata = processAudioWithHarmonies(audiodata, tonic, mode)
+		newdata = processAudioWithHarmonies(audiodata, tonic, mode, shift_data)
 		#print newdata
 
 		#normalize
@@ -73,11 +77,15 @@ def harmonizeData():
 @app.route('/harmonizeUploaded', methods=['GET', 'POST'])
 def harmonizedUploaded():
 	if request.method == 'POST':
+		#key data
 		dummy = request.get_data()
 		string_data = cache.get('key_data')
 		string_array = string_data.split(',')
 		tonic = int(string_array[0])
 		mode = int(string_array[1])
+
+		#shift data
+		shift_data = cache.get('shift_data')
 
 		audiodata = cache.get('original_audio_np')
 		original = audiodata
@@ -88,7 +96,7 @@ def harmonizedUploaded():
 		pythlist_original = original.tolist()
 		cache.set('original_audio', str(pythlist_original))
 
-		newdata = processAudioWithHarmonies(audiodata, tonic, mode)
+		newdata = processAudioWithHarmonies(audiodata, tonic, mode, shift_data)
 		#normalize
 		if np.max(np.abs(newdata)) > 1:
 			newdata = newdata / np.max(np.abs(newdata))
@@ -99,8 +107,6 @@ def harmonizedUploaded():
 		return pythliststring
 	else:
 		return "Normal"
-
-
 
 @app.route('/originalAudio', methods=['GET'])
 def originalAudio():
@@ -124,17 +130,26 @@ def keyData():
 	else:
 		return "Normal"
 
+@app.route('/shiftData', methods=['POST'])
+def shiftData():
+	if request.method == 'POST':
+		data = request.get_data()
+		cache.set('shift_data', data)
+		return request.get_data()
+	else:
+		return "Normal"
+
 @app.route('/static/<path:path>')
 def send_js(path):
 	return send_from_directory('static', path)	
 
 #oh. it is useful.
 #takes in audio as np.array
-def processAudioWithHarmonies(audio, tonic, mode):
+def processAudioWithHarmonies(audio, tonic, mode, shift):
 	array = audio
 	cache.set('original_np', array)
 	#print type(array)
-	newaudio, pitchesmelody_verb, melody_midi, onset_times = harmonizeme(array, tonic, mode)
+	newaudio, pitchesmelody_verb, melody_midi, onset_times = harmonizeme(array, tonic, mode, shift)
 	cache.set('pitchesmelody_verb', pitchesmelody_verb)
 	cache.set('melody_midi', melody_midi)
 	cache.set('onset_times', onset_times)

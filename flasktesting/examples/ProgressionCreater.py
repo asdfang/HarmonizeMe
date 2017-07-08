@@ -40,16 +40,12 @@ class ProgressionCreater:
 	def get_progression_semitones(self):
 		progression_semitones = []
 		progression = self.get_progression_RN()
-		print "*****************"
-		print "melody: " + str(self.melody_SD)
-		print "progression: " + str(progression)
 
 		for ii in range(0, len(self.melody_SD)):
 			chord_SD = self.fill_chord(self.melody_SD[ii], progression[ii])
 			chord_semitones = self.chord_sd_to_semitones(chord_SD, self.progression_mode)
 			progression_semitones.append(chord_semitones)
 
-		print "progression_semitones: " + str(progression_semitones)
 		return progression_semitones
 
 
@@ -192,9 +188,6 @@ class ProgressionCreater:
 
 			return chord_semitones
 		else: #shift is up
-			print top
-			print mid
-			print bottom
 			mid_semitones = mid - bottom
 			if mid_semitones < 0:
 				mid_semitones = mid_semitones + 12
@@ -257,6 +250,8 @@ class ProgressionCreater:
 			return [2, 5, 7]
 		elif chord == "ii6" or chord == "iio6":
 			return [4, 6, 2]
+		elif chord == "skip":
+			return [0, 0, 0]
 
 	'''
 	Helper function.

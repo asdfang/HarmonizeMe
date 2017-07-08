@@ -180,7 +180,17 @@
                      </div>
                   </td>
                </tr>
-
+               <tr>
+                  <td colspan="3" align="center">
+                     <p align="center">
+                        Also, please select your voice range:
+                        <form>
+                           <label class="radio-inline"><input type="radio" id="high" name="optradio" checked>High</label>
+                           <label class="radio-inline"><input type="radio" name="optradio">Low</label>
+                        </form>
+                     </p>
+                  </td>
+               </tr>
                <tr>
                   <td colspan="3" align="center">
                      <a id="harmony_link" href="{{ url_for('harmonizer') }}" class="btn btn-info btn-lg">Harmonize in this key!</a>
@@ -199,6 +209,7 @@
             var harmony_link = document.getElementById("harmony_link");
 
             harmony_link.onclick = function() {
+               // key stuff
                var tonic_e = document.getElementById("tonic_picker");
                var mode_e = document.getElementById("mode_picker");
 
@@ -211,6 +222,15 @@
 
                $.post("/keyData", keyString, function(data) {
                   console.log("data in key_picker.html: " + data);
+               });
+
+               // shift stuff
+               var high = document.getElementById("high");
+               var shift;
+               if (high.checked) shift = "down";
+               else shift = "up";
+               $.post("/shiftData", shift, function(data) {
+                  console.log("Your voice will be shifted " + data);
                });
             }
          }
