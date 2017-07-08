@@ -21,6 +21,7 @@ app.config['SESSION_TYPE'] = 'filesystem'
 @app.route('/')
 def index():
 	session['file_uploaded'] = False
+	session['display_warning'] = False
 	return render_template('key_picker.html')
 
 @app.route('/harmonizer', methods=['GET', 'POST'])
@@ -154,18 +155,30 @@ def upload_file():
 		# if user does not select file, browser also
 		# submit a empty part without filename
 		if f.filename == '':
-			flash('No selected file')
-			return redirect(request.url)
+			# flash('No selected file')
+			return render_template('example_simple_exportwav.html')
 		if f and allowed_file(f.filename):
 			filename = secure_filename(f.filename)
 			f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			original_audio, sr = librosa.core.load(os.path.join(app.config['UPLOAD_FOLDER'], filename), sr=44100)
 			cache.set("original_audio_np", original_audio)
+			original = original_audio
+			#normalize
+			if np.max(np.abs(original)) > 1:
+				original = original / np.max(np.abs(original))
+			pythlist_original = original.tolist()
+			cache.set('original_audio', str(pythlist_original))
+
 			os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			session['file_uploaded'] = True
 			name_display = Markup(filename)
 			flash(name_display, category='name_display')
 			return render_template('example_simple_exportwav.html')
+		# else, file extension not allowed
+		else:
+			session['display_warning'] = True
+			return render_template('example_simple_exportwav.html')
+
 
 #gets uploaded file
 @app.route('/uploads/<filename>')

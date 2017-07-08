@@ -161,7 +161,7 @@
             <br> <br>
             <!-- hidden at first -->
             <p id="playRecordedInstructions" style="font-size:16px; text-align:center; display:none">
-               Listen to what you just recorded below! You are free to re-record if you would like.
+               Listen to what you just recorded/uploaded below! You are free to re-record/re-upload if you would like.
             </p>
             <div id="waveform"></div> <br>
             <div style="text-align:center">
@@ -174,21 +174,65 @@
          <br>
          <!-- TESTING UPLOADING START -->
          <div class="form-group" id="upload" style="text-align:center">
-            <p align="center">Upload a file if you have already recorded one before!</p>
+            <p align="center">OR, upload a file if you have already recorded one before!</p>
+
             {% if not session.file_uploaded %}
             <form action="http://127.0.0.1:5000/uploader" method="POST" enctype="multipart/form-data">
-               <center><input class="form-control-file" type="file" name="file"></input></center>
-               <input class="btn btn-primary btn-space" type="submit" value="Upload" />
+               {% if session.display_warning %}
+               <small class="form-text">Please check for the allowed extensions.</small>
+               {% endif %}
+               <center><input class="form-control-file" type="file" name="file" style="margin-bottom:4px"></input></center>
+               <input class="btn btn-primary btn-space" type="submit" value="Upload" disabled />
+               <small class="form-text text-muted">Allowed extensions: .mp3, .wav</small>
             </form>
             {% else %}
+            <button id="harmonized_upload_link" onclick="harmonizeUpload();" class="btn btn-primary btn-xlarge">Harmonize Me!!</a> </button> <br>
+
             Uploaded: {% with messages = get_flashed_messages(category_filter=["name_display"]) %} {{ messages[0] }} {% endwith %}
             <form action="http://127.0.0.1:5000/reload">
                <input class="btn btn-info btn-space" type="submit" value="Upload another file" \>
 <!--                <a id="harmonized_upload_link" href="{{ url_for('harmonizedResults') }}" class="btn btn-primary btn-xlarge">Harmonize Me!!</a>
  -->           
             </form>
+            <script>
+               var original_audio_buffer;
+               $.get("/originalAudio", function(data) {
+                  original_audio_buffer = data;
+                  original_audio_buffer = new Float32Array(JSON.parse(original_audio_buffer));
+
+                  //show waveform and its buttons
+                  var wf = document.getElementById('waveform');
+                  var pB = document.getElementById('playButton');
+                  var p = document.getElementById('playRecordedInstructions');
+                  wf.style.display = '';
+                  pB.style.display = 'inline';
+                  pB.nextElementSibling.style.display = 'inline';
+                  pB.nextElementSibling.nextElementSibling.style.display = 'inline';
+                  p.style.display = 'inline';
+ 
+                  var arr = Array.prototype.slice.call(original_audio_buffer);
+                  var dataview = encodeWAV(arr);
+                  var audioBlob = new Blob([dataview], { type: 'audio/wav' });
+
+                  wavesurfer.loadBlob(audioBlob);
+                  wavesurfer.on('ready', function() {
+                     console.log("WaveSurfer is ready to play.");
+                     wavesurfer.on('finish', function() {
+                        replay = true;
+                        pB = document.getElementById("playButton");
+                        rB = document.getElementById("recordButton");
+                        // enable play button when finished
+                        pB.disabled = false;
+                        // disable pause and stop button when finished
+                        pB.nextElementSibling.disabled = true;
+                        pB.nextElementSibling.nextElementSibling.disabled = true;
+                        // enable rerecording
+                        rB.disabled = false;
+                     });
+                  });
+               });
+            </script>
             <br>
-            <button id="harmonized_upload_link" onclick="harmonizeUpload();" class="btn btn-primary btn-xlarge">Harmonize Me!!</a>
             {% endif %}
          </div>
 
@@ -234,6 +278,19 @@
    var harmonized_clicked_once = false;
    var harmonized_upload_clicked_once = false;
 
+   // to enable/disable 'Upload' button
+   $(document).ready(
+    function(){
+        $('input:file').change(
+            function(){
+                if ($(this).val()) {
+                    $('input:submit').attr('disabled',false);
+                    // or, as has been pointed out elsewhere:
+                    // $('input:submit').removeAttr('disabled'); 
+                } 
+            }
+            );
+    });
 
    function linkIsDisabled(classString) {
       return classString.slice(classString.length-9) === " disabled";
