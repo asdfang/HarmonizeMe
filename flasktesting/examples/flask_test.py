@@ -14,15 +14,23 @@ cache = SimpleCache()
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
-app.secret_key = 'as@FJ$ZFJO(DI%$T'
+app.secret_key = 'as@FJ$ZFJO(DI%$F'
 app.config['SESSION_TYPE'] = 'filesystem'
-
 
 @app.route('/')
 def index():
 	session['file_uploaded'] = False
 	session['display_warning'] = False
+	return render_template('home.html')
+
+@app.route('/keypicker')
+def keypicker():
 	return render_template('key_picker.html')
+# @app.route('/')
+# def index():
+# 	session['file_uploaded'] = False
+# 	session['display_warning'] = False
+# 	return render_template('key_picker.html')
 
 @app.route('/harmonizer', methods=['GET', 'POST'])
 def harmonizer():
