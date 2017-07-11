@@ -23,14 +23,21 @@ def index():
 	session['display_warning'] = False
 	return render_template('home.html')
 
-@app.route('/keypicker')
-def keypicker():
-	return render_template('key_picker.html')
-# @app.route('/')
-# def index():
-# 	session['file_uploaded'] = False
-# 	session['display_warning'] = False
-# 	return render_template('key_picker.html')
+@app.route('/recordkeypick')
+def recordkeypick():
+	return render_template('recordkeypick.html')
+
+@app.route('/rangepick')
+def rangepick():
+	return render_template('rangepick.html')
+
+@app.route('/record')
+def record():
+	return render_template('record.html')
+
+@app.route('/playrecorded.html')
+def playrecorded():
+	return render_template('playrecorded.html')
 
 @app.route('/harmonizer', methods=['GET', 'POST'])
 def harmonizer():
