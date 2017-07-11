@@ -35,9 +35,24 @@ def rangepick():
 def record():
 	return render_template('record.html')
 
-@app.route('/playrecorded.html')
+@app.route('/playrecorded')
 def playrecorded():
 	return render_template('playrecorded.html')
+
+
+@app.route('/uploadkeypick')
+def uploadkeypick():
+	return render_template('uploadkeypick.html')
+
+@app.route('/uploadrangepick')
+def uploadrangepick():
+	return render_template('uploadrangepick.html')
+
+@app.route('/upload')
+def upload():
+	return render_template('upload.html')
+
+
 
 @app.route('/harmonizer', methods=['GET', 'POST'])
 def harmonizer():
@@ -203,11 +218,11 @@ def upload_file():
 			session['file_uploaded'] = True
 			name_display = Markup(filename)
 			flash(name_display, category='name_display')
-			return render_template('example_simple_exportwav.html')
+			return render_template('upload.html')
 		# else, file extension not allowed
 		else:
 			session['display_warning'] = True
-			return render_template('example_simple_exportwav.html')
+			return render_template('upload.html')
 
 
 #gets uploaded file
@@ -218,7 +233,7 @@ def uploaded_file(filename):
 @app.route('/reload')
 def reload():
 	session['file_uploaded'] = False
-	return render_template('example_simple_exportwav.html')
+	return render_template('upload.html')
 
 
 #real matplot
