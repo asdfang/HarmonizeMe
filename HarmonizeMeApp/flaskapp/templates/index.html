@@ -8,11 +8,11 @@
       <link rel="stylesheet" type="text/css" href="../static/bootstrap-3.3.7-dist/css/bootstrap.min.css"></link>
 
       <!-- Custom CSS -->
-      <!-- For Flask usage:
-      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}"></link> -->
+      <!-- For Flask usage: -->
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/home.css') }}"></link>
 
       <!-- For local testing: -->
-      <link rel="stylesheet" type="text/css" href="../static/css/home.css"></link>
+      <!-- <link rel="stylesheet" type="text/css" href="../static/css/home.css"></link> -->
 
       <!-- Custom fonts from Google-->
       <link href="https://fonts.googleapis.com/css?family=Lato|Lora|Merriweather|Montserrat" rel="stylesheet">
@@ -25,6 +25,7 @@
       <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.0.52/wavesurfer.min.js"></script>
       <script src="/static/dist/recorder.js"></script>
    </head>
+   
    <body>
       <nav class="navbar navbar-inverse navbar-fixed-top">
          <div class="navbar-header">
@@ -55,7 +56,6 @@
 
          <div id="buttons" class="container">
             <a href="{{ url_for('recordkeypick') }}" class="btn btn-primary btn-outline btn-xlarge" style="margin-right:10%;">Record!</a>
-            <!-- <button type="button" class="btn btn-primary btn-outline btn-xlarge" style="margin-right:10%;">Record!</button> -->
             <a href="{{ url_for('uploadkeypick') }}" class="btn btn-primary btn-outline btn-xlarge" style="margin-right:10%;">Upload!</a>
          </div>
       </div>
