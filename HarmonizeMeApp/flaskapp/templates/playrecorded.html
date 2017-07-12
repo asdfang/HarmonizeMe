@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+
+<html>
+   <head>
+      <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+      <title>Hear Harmonization!</title>
+      <!-- Bootstrap CSS -->
+      <link rel="stylesheet" type="text/css" href="../static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+
+      <!-- Custom CSS -->
+      <!-- For Flask usage:
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/record.css') }}"></link> -->
+
+      <!-- For local testing: -->
+      <link rel="stylesheet" type="text/css" href="../static/css/record.css"></link>
+
+      <!-- Bootstrap and jQuery -->
+      <script src="/static/jquery-3.2.1.min.js"></script>
+      <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+
+      <!-- Custom fonts from Google-->
+      <link href="https://fonts.googleapis.com/css?family=Lato|Lora|Merriweather|Montserrat" rel="stylesheet">
+
+      <!-- wavesurfer.js -->
+      <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.0.52/wavesurfer.min.js"></script>
+
+      <!-- recorder.js -->
+      <script src="/static/dist/recorder.js"></script>
+
+   </head>
+   <body>
+      <nav class="navbar navbar-inverse navbar-fixed-top">
+         <div class="navbar-header">
+            <a href="#" class="navbar-brand"><span class="glyphicon glyphicon-music" aria-hidden="true"></span> HarmonizeMe</a>
+         </div>
+      </nav>
+
+      <div class="container">
+         <div id="instructions" class="container">
+            <div class="row">
+               <div class="col-xs-3 num"><span class="instr">4.</span></div><div class="col-xs-9 instr"><span class="instr"><i>Hear</i> your harmonization</span></div>
+            </div>
+         </div>
+
+         <div class="jumbotron">
+            <div id="waveform"></div> <br>
+            <div style="text-align:center">
+               <button id="playButton" class="btn btn-info btn-space" onclick="play(this);"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
+               <button class="btn btn-info btn-space" onclick="pause(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
+               <button class="btn btn-info btn-space" onclick="stop(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+            <div id="download" style="text-align:center"> <br>
+<!-- Use fewer words...               Here is a download link for the audio that contains your singing with harmonization: <br>
+ -->               <a href="#" id="dl" class="btn btn-primary btn-lg">Download harmonized file!</a>
+            </div>
+            </div>
+         </div>
+         <h4 style="text-align:center">Original sung audio:</h4>
+         <div class="jumbotron">
+            <div id="waveform2"></div> <br>
+            <div style="text-align:center">
+               <button id="playButton2" class="btn btn-info btn-space" onclick="play2(this);"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
+               <button class="btn btn-info btn-space" onclick="pause2(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
+               <button class="btn btn-info btn-space" onclick="stop2(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+            </div>
+            <div id="download2" style="text-align:center"> <br>
+<!--                Here is a download link for the audio that contains your original, non-harmonized singing: <br>
+ -->               <a href="#" id="dl2" class="btn btn-primary btn-lg">Download original file!</a>
+            </div>
+         </div>
+         <div style="text-align:center">
+            <a href="{{ url_for('index') }}" id="restartLink" class="btn btn-success btn-xlarge btn-space" style="margin-right:8px">Start Over!</a>
+            <a href="{{ url_for('plot') }}" id="plot" class="btn btn-primary btn-space">View plot</a>
+         </div>
+      </div>
+
+      <script>
+         // anything with a "2" refers to the original audio. otherwise, it's the processed (harmonized) audio)
+         var harmonized_audio;
+         var original_audio;
+         var wavesurfer, wavesurfer2;
+         var numChannels = 1;
+         var sampleRate = 44100;
+         var replay = false, replay2 = false;
+         var pB, pB2;
+         var aB, aB2; // audioBlob, audioBlob2
+         // var audioCtx = new AudioContext();
+         // var buffer;
+
+         window.onload = function init() {
+            $.get("/harmonizeData", function(data) {
+               harmonized_audio = data;
+               //console.log("\nNewdata?: " + newData);
+               harmonized_audio = new Float32Array(JSON.parse(harmonized_audio));
+
+               initWaveSurfer();
+
+               makeDownloadLink();
+            });
+
+            $.get("/originalAudio", function(data) {
+               original_audio = data;
+               original_audio = new Float32Array(JSON.parse(original_audio));
+
+               initWaveSurfer2();
+
+               makeDownloadLink2();
+            });
+         }
+
+
+         function initWaveSurfer() {
+            // turn Float32Array into normal javascript array
+            var arr = Array.prototype.slice.call(harmonized_audio);
+            var dataview = encodeWAV(arr);
+            var audioBlob = new Blob([dataview], { type: 'audio/wav' });
+            aB = audioBlob;
+
+            wavesurfer = WaveSurfer.create({
+               container: '#waveform',
+               scrollParent: true,
+               height: 64
+            });
+            
+            wavesurfer.loadBlob(audioBlob);
+            wavesurfer.on('ready', function() {
+               console.log("WaveSurfer ready to play.");
+               wavesurfer.on('finish', function() {
+                  replay = true;
+                  pB = document.getElementById("playButton");
+                  // enable play button when finished
+                  pB.disabled = false;
+                  // disable pause and stop button when finished
+                  pB.nextElementSibling.disabled = true;
+                  pB.nextElementSibling.nextElementSibling.disabled = true;
+               });
+            });
+         }
+
+         function initWaveSurfer2() {
+            // turn Float32Array into normal javascript array
+            var arr = Array.prototype.slice.call(original_audio);
+            var dataview = encodeWAV(arr);
+            var audioBlob = new Blob([dataview], { type: 'audio/wav' });
+            aB2 = audioBlob;
+
+            wavesurfer2 = WaveSurfer.create({
+               container: '#waveform2',
+               scrollParent: true,
+               height: 64
+            });
+
+            wavesurfer2.loadBlob(audioBlob);
+            wavesurfer2.on('ready', function() {
+               console.log("WaveSurfer2 ready to play.");
+               wavesurfer2.on('finish', function() {
+                  replay2 = true;
+                  pB2 = document.getElementById("playButton");
+                  // enable play button when finished
+                  pB2.disabled = false;
+                  // disable pause and stop button when finished
+                  pB2.nextElementSibling.disabled = true;
+                  pB2.nextElementSibling.nextElementSibling.disabled = true;
+
+               });
+            });
+
+
+         }
+
+         function play(button) {
+            if (replay) {
+               wavesurfer.stop();
+               replay = false;
+            }
+            // disable Play button while playing
+            button.disabled = true;
+            // enable Pause button while playing
+            button.nextElementSibling.disabled = false;
+            // enable Stop button while playing
+            button.nextElementSibling.nextElementSibling.disabled = false;
+
+            wavesurfer.play();
+         }
+
+         function play2(button) {
+            if (replay2) {
+               wavesurfer2.stop();
+               replay2 = false;
+            }
+            // disable Play button while playing
+            button.disabled = true;
+            // enable Pause button while playing
+            button.nextElementSibling.disabled = false;
+            // enable Stop button while playing
+            button.nextElementSibling.nextElementSibling.disabled = false;
+
+            wavesurfer2.play();
+         }
+
+         function pause(button) {
+            // enable Play button while paused
+            button.previousElementSibling.disabled = false;
+            // disable Pause button while paused
+            button.disabled = true;
+            // enable Stop button while paused
+            button.nextElementSibling.disabled = false;
+
+            wavesurfer.pause();
+         }
+
+         function pause2(button) {
+            // enable Play button while paused
+            button.previousElementSibling.disabled = false;
+            // disable Pause button while paused
+            button.disabled = true;
+            // enable Stop button while paused
+            button.nextElementSibling.disabled = false;
+
+            wavesurfer2.pause();
+         }
+
+         function stop(button) {
+            // enable Play button while stopped
+            button.previousElementSibling.previousElementSibling.disabled = false;
+            // disable Pause button while stopped
+            button.previousElementSibling.disabled = true;
+            // disable Stop button while stopped
+            button.disabled = true;
+
+            wavesurfer.stop();
+         }
+
+         function stop2(button) {
+            // enable Play button while stopped
+            button.previousElementSibling.previousElementSibling.disabled = false;
+            // disable Pause button while stopped
+            button.previousElementSibling.disabled = true;
+            // disable Stop button while stopped
+            button.disabled = true;
+
+            wavesurfer2.stop();
+         }
+
+
+         /*
+          * recorder.js functions to help successfully create the blob to load into
+          * Before putting it into the blob, encode it correctly...
+          * This has a replica -- make another js file for this maybe?
+          */
+
+          // helper for encodeWAV
+         function writeString(view, offset, string) {
+             for (var i = 0; i < string.length; i++) {
+                 view.setUint8(offset + i, string.charCodeAt(i));
+             }
+         }
+
+         // helper for encodeWAV
+         function floatTo16BitPCM(output, offset, input) {
+             for (var i = 0; i < input.length; i++, offset += 2) {
+                 var s = Math.max(-1, Math.min(1, input[i]));
+                 output.setInt16(offset, s < 0 ? s * 0x8000 : s * 0x7FFF, true);
+             }
+         }
+
+         // helper for exportWAV
+         function encodeWAV(samples) {
+            var buffer = new ArrayBuffer(44 + samples.length * 2);
+            var view = new DataView(buffer);
+
+            /* RIFF identifier */
+            writeString(view, 0, 'RIFF');
+            /* RIFF chunk length */
+            view.setUint32(4, 36 + samples.length * 2, true);
+            /* RIFF type */
+            writeString(view, 8, 'WAVE');
+            /* format chunk identifier */
+            writeString(view, 12, 'fmt ');
+            /* format chunk length */
+            view.setUint32(16, 16, true);
+            /* sample format (raw) */
+            view.setUint16(20, 1, true);
+            /* channel count */
+            view.setUint16(22, numChannels, true);
+            /* sample rate */
+            view.setUint32(24, sampleRate, true);
+            /* byte rate (sample rate * block align) */
+            view.setUint32(28, sampleRate * 4, true);
+            /* block align (channel count * bytes per sample) */
+            view.setUint16(32, numChannels * 2, true);
+            /* bits per sample */
+            view.setUint16(34, 16, true);
+            /* data chunk identifier */
+            writeString(view, 36, 'data');
+            /* data chunk length */
+            view.setUint32(40, samples.length * 2, true);
+
+            floatTo16BitPCM(view, 44, samples);
+
+            return view;
+         }
+
+         function makeDownloadLink() {
+            dl = document.getElementById('dl');
+            var url = URL.createObjectURL(aB);
+            dl.href = url;
+            dl.download = "harmonized.wav"
+         }
+
+         function makeDownloadLink2() {
+            dl2 = document.getElementById('dl2');
+            var url = URL.createObjectURL(aB2);
+            dl2.href = url;
+            dl2.download = "original.wav"
+
+         }
+      </script>
+   </body>
+</html>

@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+   
+<head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Pick Voice Placement</title>
+
+      <!-- Bootstrap CSS -->
+      <link rel="stylesheet" type="text/css" href="../static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+
+      <!-- Custom CSS -->
+      <!-- For Flask usage:
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/keypick.css') }}"></link> -->
+
+      <!-- For local testing: -->
+      <link rel="stylesheet" type="text/css" href="../static/css/keypick.css"></link>
+
+      <!-- Custom fonts from Google-->
+      <link href="https://fonts.googleapis.com/css?family=Lato|Lora|Merriweather|Montserrat" rel="stylesheet">
+
+      <!-- Bootstrap and jQuery -->
+      <script src="../static/jquery-3.2.1.min.js"></script>
+      <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+   </head>
+   <body>
+      
+      <nav class="navbar navbar-inverse navbar-fixed-top">
+         <div class="navbar-header">
+            <a href="#" class="navbar-brand"><span class="glyphicon glyphicon-music" aria-hidden="true"></span> HarmonizeMe</a>
+         </div>
+      </nav>
+
+      <div class="container">
+         <div id="instructions" class="container">
+            <div class="row">
+               <div class="col-xs-3 num"><span class="instr">2.</span></div><div class="col-xs-9 instr"><span class="instr">Add voices <i>Above</i> or <i>Below</i> your own voice</span></div>
+            </div>
+         </div>
+
+         <div class="jumbotron" name="key_selector">
+            <p align="center">
+               Please select where you want the voices added:
+            </p>
+               <div id="buttons" class="container">
+                  <a id="shift-up" href="{{ url_for('upload') }}" class="btn btn-primary btn-outline btn-lg" style="margin-right:10%;">Above</a>
+                  <a id="shift-down" href="{{ url_for('upload') }}" class="btn btn-primary btn-outline btn-lg" style="margin-left:10%;">Below</a>
+               </div>
+         </div>
+      </div> <!-- end container -->
+
+      <script>
+         var shiftUpLink, shiftDownLink;
+         
+         window.onload = function() {
+            shiftUpLink = document.getElementById("shift-up");
+            shiftDownLink = document.getElementById("shift-down");
+
+            shiftUpLink.onclick = function() {
+               $.post("/shiftData", "up", function(data) {
+                  console.log("Your voice will be shifted " + data);
+               });
+            }
+            shiftDownLink.onclick = function() {
+               $.post("/shiftData", "down", function(data) {
+                  console.log("Your voice will be shifted " + data);
+               });
+            }
+         }
+      </script>
+   </body>
+</html>

@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html>
+   
+<head>
+      <meta charset="UTF-8">
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <title>Pick Your Key</title>
+
+      <!-- Bootstrap CSS -->
+      <link rel="stylesheet" type="text/css" href="../static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+
+      <!-- Custom CSS -->
+      <!-- For Flask usage:
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/keypick.css') }}"></link> -->
+
+      <!-- For local testing: -->
+      <link rel="stylesheet" type="text/css" href="../static/css/keypick.css"></link>
+
+      <!-- Custom fonts from Google-->
+      <link href="https://fonts.googleapis.com/css?family=Lato|Lora|Merriweather|Montserrat" rel="stylesheet">
+
+      <!-- Bootstrap and jQuery -->
+      <script src="../static/jquery-3.2.1.min.js"></script>
+      <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+   </head>
+   <body>
+      <div id="audio_list">
+         <!-- audio tonic files -->
+         <audio id="60Majorhigh.mp3" src="./resources/60Majorhigh.mp3" preload="auto"></audio>
+         <audio id="60Majormid.mp3"  src="./resources/60Majormid.mp3" preload="auto"></audio>
+         <audio id="60Minorhigh.mp3" src="./resources/60Minorhigh.mp3" preload="auto"></audio>
+         <audio id="60Minormid.mp3"  src="./resources/60Minormid.mp3" preload="auto"></audio>
+
+         <audio id="61Majorhigh.mp3" src="./resources/61Majorhigh.mp3" preload="auto"></audio>
+         <audio id="61Majormid.mp3"  src="./resources/61Majormid.mp3" preload="auto"></audio>
+         <audio id="61Minorhigh.mp3" src="./resources/61Minorhigh.mp3" preload="auto"></audio>
+         <audio id="61Minormid.mp3"  src="./resources/61Minormid.mp3" preload="auto"></audio>
+
+         <audio id="62Majorhigh.mp3" src="./resources/62Majorhigh.mp3" preload="auto"></audio>
+         <audio id="62Majormid.mp3"  src="./resources/62Majormid.mp3" preload="auto"></audio>
+         <audio id="62Minorhigh.mp3" src="./resources/62Minorhigh.mp3" preload="auto"></audio>
+         <audio id="62Minormid.mp3"  src="./resources/62Minormid.mp3" preload="auto"></audio>
+
+         <audio id="63Majorhigh.mp3" src="./resources/63Majorhigh.mp3" preload="auto"></audio>
+         <audio id="63Majormid.mp3"  src="./resources/63Majormid.mp3" preload="auto"></audio>
+         <audio id="63Majorlow.mp3"  src="./resources/63Majorlow.mp3" preload="auto"></audio>
+         <audio id="63Minorhigh.mp3" src="./resources/63Minorhigh.mp3" preload="auto"></audio>
+         <audio id="63Minormid.mp3"  src="./resources/63Minormid.mp3" preload="auto"></audio>
+         <audio id="63Minorlow.mp3"  src="./resources/63Minorlow.mp3" preload="auto"></audio>
+
+         <audio id="64Majorhigh.mp3" src="./resources/64Majorhigh.mp3" preload="auto"></audio>
+         <audio id="64Majormid.mp3"  src="./resources/64Majormid.mp3" preload="auto"></audio>
+         <audio id="64Majorlow.mp3"  src="./resources/64Majorlow.mp3" preload="auto"></audio>
+         <audio id="64Minorhigh.mp3" src="./resources/64Minorhigh.mp3" preload="auto"></audio>
+         <audio id="64Minormid.mp3"  src="./resources/64Minormid.mp3" preload="auto"></audio>
+         <audio id="64Minorlow.mp3"  src="./resources/64Minorlow.mp3" preload="auto"></audio>
+
+         <audio id="65Majorhigh.mp3" src="./resources/65Majorhigh.mp3" preload="auto"></audio>
+         <audio id="65Majormid.mp3"  src="./resources/65Majormid.mp3" preload="auto"></audio>
+         <audio id="65Majorlow.mp3"  src="./resources/65Majorlow.mp3" preload="auto"></audio>
+         <audio id="65Minorhigh.mp3" src="./resources/65Minorhigh.mp3" preload="auto"></audio>
+         <audio id="65Minormid.mp3"  src="./resources/65Minormid.mp3" preload="auto"></audio>
+         <audio id="65Minorlow.mp3"  src="./resources/65Minorlow.mp3" preload="auto"></audio>
+
+         <audio id="66Majorhigh.mp3" src="./resources/66Majorhigh.mp3" preload="auto"></audio>
+         <audio id="66Majormid.mp3"  src="./resources/66Majormid.mp3" preload="auto"></audio>
+         <audio id="66Majorlow.mp3"  src="./resources/66Majorlow.mp3" preload="auto"></audio>
+         <audio id="66Minorhigh.mp3" src="./resources/66Minorhigh.mp3" preload="auto"></audio>
+         <audio id="66Minormid.mp3"  src="./resources/66Minormid.mp3" preload="auto"></audio>
+         <audio id="66Minorlow.mp3"  src="./resources/66Minorlow.mp3" preload="auto"></audio>
+
+         <audio id="67Majorhigh.mp3" src="./resources/67Majorhigh.mp3" preload="auto"></audio>
+         <audio id="67Majormid.mp3"  src="./resources/67Majormid.mp3" preload="auto"></audio>
+         <audio id="67Majorlow.mp3"  src="./resources/67Majorlow.mp3" preload="auto"></audio>
+         <audio id="67Minorhigh.mp3" src="./resources/67Minorhigh.mp3" preload="auto"></audio>
+         <audio id="67Minormid.mp3"  src="./resources/67Minormid.mp3" preload="auto"></audio>
+         <audio id="67Minorlow.mp3"  src="./resources/67Minorlow.mp3" preload="auto"></audio>
+
+         <audio id="68Majorhigh.mp3" src="./resources/68Majorhigh.mp3" preload="auto"></audio>
+         <audio id="68Majormid.mp3"  src="./resources/68Majormid.mp3" preload="auto"></audio>
+         <audio id="68Majorlow.mp3"  src="./resources/68Majorlow.mp3" preload="auto"></audio>
+         <audio id="68Minorhigh.mp3" src="./resources/68Minorhigh.mp3" preload="auto"></audio>
+         <audio id="68Minormid.mp3"  src="./resources/68Minormid.mp3" preload="auto"></audio>
+         <audio id="68Minorlow.mp3"  src="./resources/68Minorlow.mp3" preload="auto"></audio>
+
+         <audio id="69Majorhigh.mp3" src="./resources/69Majorhigh.mp3" preload="auto"></audio>
+         <audio id="69Majormid.mp3"  src="./resources/69Majormid.mp3" preload="auto"></audio>
+         <audio id="69Majorlow.mp3"  src="./resources/69Majorlow.mp3" preload="auto"></audio>
+         <audio id="69Minorhigh.mp3" src="./resources/69Minorhigh.mp3" preload="auto"></audio>
+         <audio id="69Minormid.mp3"  src="./resources/69Minormid.mp3" preload="auto"></audio>
+         <audio id="69Minorlow.mp3"  src="./resources/69Minorlow.mp3" preload="auto"></audio>
+
+         <audio id="70Majorlow.mp3"  src="./resources/70Majorlow.mp3" preload="auto"></audio>
+         <audio id="70Majormid.mp3"  src="./resources/70Majormid.mp3" preload="auto"></audio>
+         <audio id="70Minorlow.mp3"  src="./resources/70Minorlow.mp3" preload="auto"></audio>
+         <audio id="70Minormid.mp3"  src="./resources/70Minormid.mp3" preload="auto"></audio>
+
+         <audio id="71Majorlow.mp3"  src="./resources/71Majorlow.mp3" preload="auto"></audio>
+         <audio id="71Majormid.mp3"  src="./resources/71Majormid.mp3" preload="auto"></audio>
+         <audio id="71Minorlow.mp3"  src="./resources/71Minorlow.mp3" preload="auto"></audio>
+         <audio id="71Minormid.mp3"  src="./resources/71Minormid.mp3" preload="auto"></audio>
+      </div>
+
+      <nav class="navbar navbar-inverse navbar-fixed-top">
+         <div class="navbar-header">
+            <a href="#" class="navbar-brand"><span class="glyphicon glyphicon-music" aria-hidden="true"></span> HarmonizeMe</a>
+         </div>
+<!--          <ul class="nav navbar-nav">
+            <li><a href="#">Replacethis,formusictheory</a></li>
+         </ul> -->
+      </nav>
+
+      <div class="container">
+         <div id="instructions" class="container">
+            <div class="row">
+               <div class="col-xs-3 num"><span class="instr">1.</span></div><div class="col-xs-9 instr"><span class="instr"><i>Choose</i> a key to harmonize in</span></div>
+            </div>
+         </div>
+
+         <div class="jumbotron" name="key_selector">
+            <p align="center">
+               Please select the key of your upload, by selecting a tonic and the mode. <br>
+               Do your best to get it correct now, but you can adjust it when you upload!
+            </p>
+
+            <table id="keypicker" align="center">
+               <tr>
+                  <td>
+                     <div style="float:left; width:100px;" class="form-group">
+                        <label for="tonic_picker">Select tonic:</label> <br>
+                        <select id="tonic_picker" class="form-control">
+                           <option value="60" selected>C</option> 
+                           <option value="61">C&#x266f;/D&#x266d;</option>
+                           <option value="62">D</option>
+                           <option value="63">E&#x266d;</option>
+                           <option value="64">E</option>
+                           <option value="65">F</option>
+                           <option value="66">F&#x266f;/G&#x266d;</option>
+                           <option value="67">G</option>
+                           <option value="68">G&#x266f;/A&#x266d;</option>
+                           <option value="69">A</option>
+                           <option value="70">B&#x266d;</option>
+                           <option value="71">B</option>
+                        </select>
+                     </div>
+                  </td>
+                  <td>
+                     <div style="float:left; width:100px;" class="form-group">
+                        <label for="mode_picker">Select mode:</label> <br>
+                        <select id="mode_picker" class="form-control">
+                           <option value="0" selected>Major</option> 
+                           <option value="1">Minor</option>
+                        </select>
+                     </div>
+                  </td>
+                  <td>
+                     <div style="float:left; text-align:center" class="form-group">
+                        <br>
+                        <button class="btn btn-success" type="button" onclick="playKey(this)"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play audio!</button>
+                        <button class="btn btn-success" type="button" onclick="stopKey(this)" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+                     </div>
+                  </td>
+               </tr>
+               <tr>
+                  <td colspan="3" align="center">
+                     <a id="link_to_rangepick" href="{{ url_for('uploadrangepick') }}" class="btn btn-info btn-outline btn-lg">Harmonize in this key!</a>
+                  </td>
+               </tr>
+            </table>
+         </div>
+      </div> <!-- end container -->
+
+      <script>
+         var curr_audio;
+
+         window.onload = function() {
+            curr_audio = null;
+
+            var link_to_rangepick = document.getElementById("link_to_rangepick");
+
+            link_to_rangepick.onclick = function() {
+               // key stuff
+               var tonic_e = document.getElementById("tonic_picker");
+               var mode_e = document.getElementById("mode_picker");
+
+               // to send to Harmonizer.py
+               var tonic = tonic_e.options[tonic_e.selectedIndex].value;
+               var mode = mode_e.options[mode_e.selectedIndex].value;
+
+               var key = [tonic, mode];
+               var keyString = key.toString();
+
+               $.post("/keyData", keyString, function(data) {
+                  console.log("data in key_picker.html: " + data);
+               });
+            }
+         }
+
+
+         function playKey(button) {
+            // disable Play button while playing
+            button.disabled = true;
+            // enable Stop button while playing
+            button.nextElementSibling.disabled = false;
+            var tonic_e = document.getElementById("tonic_picker");
+            var mode_e = document.getElementById("mode_picker");
+            var selected_tonic = tonic_e.options[tonic_e.selectedIndex].text;
+            var selected_mode = mode_e.options[mode_e.selectedIndex].text;
+
+            // to send to Harmonizer.py
+            var tonic = tonic_e.options[tonic_e.selectedIndex].value;
+            var mode = mode_e.options[mode_e.selectedIndex].value;
+
+            var file_name = tonic + selected_mode + "mid.mp3";
+            var message = "You picked " + selected_tonic + " " + selected_mode + ".";
+            //confirm("This is your filename: " + file_name);
+            //confirm(message);
+            var html_audio = document.getElementById(file_name);
+
+            // button is disabled now, this shouldn't happen.
+            if (curr_audio != null) { // not null, something is playing;
+               curr_audio.pause();
+               curr_audio.currentTime = 0;
+            }
+            curr_audio = html_audio;
+            curr_audio.play()
+            curr_audio.onended = function() {
+               curr_audio = null;
+               // enable Play and disable Stop buttons when done
+               button.disabled = false;
+               button.nextElementSibling.disabled = true;
+            };
+         }
+
+         function stopKey(button) {
+            button.disabled = true;
+            button.previousElementSibling.disabled = false;
+
+            if (curr_audio != null) {
+               curr_audio.pause();
+               curr_audio.currentTime = 0;
+               curr_audio = null;
+            }
+         }
+      </script>
+   </body>
+</html>
