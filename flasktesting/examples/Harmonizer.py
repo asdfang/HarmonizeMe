@@ -109,56 +109,6 @@ def delete_zeros_ones(alist):
 			newlist.append(element)
 	return np.array(newlist)
 
-# '''
-# Gets pitches every HOP_SIZE (512) in MIDI, and onsets in samples from a filename of a sound file
-# 	Takes in: (string filename), (double samplerate)
-# 	Output: ([double] midi_numbers), ([int] onset_in_samples)
-# --> NEED a version where it can just take in a float array
-# '''
-# def getpitches(filename, samplerate):
-
-# 	#downsample = 1
-# 	#samplerate = 44100 / downsample	
-# 	win_s = 4096 / downsample # fft size
-# 	hop_s = HOP_SIZE  / downsample # hop size
-
-# 	s = source(filename, samplerate, hop_s)
-# 	samplerate = s.samplerate
-
-# 	tolerance = 0.8
-
-# 	pitch_o = pitch("yin", win_s, hop_s, samplerate)
-# 	pitch_o.set_unit("midi")
-# 	pitch_o.set_tolerance(tolerance)
-
-# 	o = onset("default", win_s, hop_s, samplerate)
-# 	onsets = []
-
-# 	pitches = []
-# 	confidences = []
-# 	#number = 0
-# 	# total number of frames read
-# 	total_frames = 0
-# 	while True:
-# 	    samples, read = s()
-# 	    pitch1 = pitch_o(samples)[0]
-# 	    #pitch = int(round(pitch))
-# 	    confidence = pitch_o.get_confidence()
-# 	    if o(samples):
-#         	# print "%f" % o.get_last_s()
-#         	onsets.append(o.get_last())
-# 	    #if confidence < 0.8: pitch = 0.
-# 	    #print "%f %f %f" % (total_frames / float(samplerate), pitch, confidence)
-# 	    pitches += [pitch1]
-# 	    confidences += [confidence]
-# 	    total_frames += read
-# 	    #number = number + 1
-# 	    if read < hop_s: break
-
-# 	if 0: sys.exit(0)
-
-# 	return pitches, onsets
-
 '''
 Call harmonizeme to harmonize the audio, given in an nd.array
 '''

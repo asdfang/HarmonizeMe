@@ -4,54 +4,25 @@
    <head>
       <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
       <title>Hear Harmonization!</title>
-      <script src="/static/jquery-3.2.1.min.js"></script>
+      <!-- Bootstrap CSS -->
       <link rel="stylesheet" type="text/css" href="../static/bootstrap-3.3.7-dist/css/bootstrap.min.css">
+
+      <!-- Custom CSS -->
+      <!-- For Flask usage:
+      <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/harmonized_results.css') }}"></link> -->
+
+      <!-- For local testing: -->
+      <link rel="stylesheet" type="text/css" href="../static/css/home.css"></link>
+
+      <!-- Bootstrap and jQuery -->
+      <script src="/static/jquery-3.2.1.min.js"></script>
       <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
+
+      <!-- wavesurfer.js -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.0.52/wavesurfer.min.js"></script>
+
+      <!-- recorder.js -->
       <script src="/static/dist/recorder.js"></script>
-      <style type='text/css'>
-        ul { list-style: none; }
-        #recordingslist audio { display: block; margin-bottom: 10px; }
-        * {
-            -webkit-user-select: none;
-          }
-          body, html {
-            margin: 0;
-            height: 100%;
-            position: relative;
-          }
-          body {
-            padding-top: 70px;
-            overflow: auto;
-            background-color: lightblue;
-          }
-          h1 {
-            text-align: center;
-          }
-          td {
-            padding-top:5px;
-            padding-bottom:5px;
-            padding-right:10px;
-          }
-          li {
-            text-align: center;
-          }
-          br {
-            line-height: 150%;
-          }
-         .btn-xlarge {
-            padding: 18px 28px;
-            font-size: 22px;
-            line-height: normal;
-            -webkit-border-radius: 8px;
-               -moz-border-radius: 8px;
-                  border-radius: 8px;
-         }
-         .btn-space {
-            margin-left: 1px;
-            margin-right: 1px;
-         }
-      </style>
    </head>
    <body>
       <nav class="navbar navbar-inverse navbar-fixed-top">
@@ -70,8 +41,7 @@
                <button class="btn btn-info btn-space" onclick="pause(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
                <button class="btn btn-info btn-space" onclick="stop(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
             <div id="download" style="text-align:center"> <br>
-<!-- Use fewer words...               Here is a download link for the audio that contains your singing with harmonization: <br>
- -->               <a href="#" id="dl" class="btn btn-primary btn-lg">Download harmonized file!</a>
+                  <a href="#" id="dl" class="btn btn-primary btn-lg">Download harmonized file!</a>
             </div>
             </div>
          </div>
@@ -84,8 +54,7 @@
                <button class="btn btn-info btn-space" onclick="stop2(this);" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
             </div>
             <div id="download2" style="text-align:center"> <br>
-<!--                Here is a download link for the audio that contains your original, non-harmonized singing: <br>
- -->               <a href="#" id="dl2" class="btn btn-primary btn-lg">Download original file!</a>
+               <a href="#" id="dl2" class="btn btn-primary btn-lg">Download original file!</a>
             </div>
          </div>
          <div style="text-align:center">
@@ -104,41 +73,29 @@
          var replay = false, replay2 = false;
          var pB, pB2;
          var aB, aB2; // audioBlob, audioBlob2
-         // var audioCtx = new AudioContext();
-         // var buffer;
 
          window.onload = function init() {
-
             // getting tonic and mode from previous page
             $.get("/keyData", function(data) {
                var return_data = data.split(',');
                tonic = parseInt(return_data[0]);
                mode = parseInt(return_data[1]);
-
-               console.log(tonic);
-               console.log(mode);
             });
 
             $.get("/harmonizeData", function(data) {
                harmonized_audio = data;
-               //console.log("\nNewdata?: " + newData);
                harmonized_audio = new Float32Array(JSON.parse(harmonized_audio));
-
                initWaveSurfer();
-
                makeDownloadLink();
             });
 
             $.get("/originalAudio", function(data) {
                original_audio = data;
                original_audio = new Float32Array(JSON.parse(original_audio));
-
                initWaveSurfer2();
-
                makeDownloadLink2();
             });
          }
-
 
          function initWaveSurfer() {
             // turn Float32Array into normal javascript array
@@ -195,8 +152,6 @@
 
                });
             });
-
-
          }
 
          function play(button) {
@@ -210,7 +165,6 @@
             button.nextElementSibling.disabled = false;
             // enable Stop button while playing
             button.nextElementSibling.nextElementSibling.disabled = false;
-
             wavesurfer.play();
          }
 
@@ -225,7 +179,6 @@
             button.nextElementSibling.disabled = false;
             // enable Stop button while playing
             button.nextElementSibling.nextElementSibling.disabled = false;
-
             wavesurfer2.play();
          }
 
@@ -236,7 +189,6 @@
             button.disabled = true;
             // enable Stop button while paused
             button.nextElementSibling.disabled = false;
-
             wavesurfer.pause();
          }
 
@@ -247,7 +199,6 @@
             button.disabled = true;
             // enable Stop button while paused
             button.nextElementSibling.disabled = false;
-
             wavesurfer2.pause();
          }
 
@@ -258,7 +209,6 @@
             button.previousElementSibling.disabled = true;
             // disable Stop button while stopped
             button.disabled = true;
-
             wavesurfer.stop();
          }
 
@@ -269,10 +219,8 @@
             button.previousElementSibling.disabled = true;
             // disable Stop button while stopped
             button.disabled = true;
-
             wavesurfer2.stop();
          }
-
 
          /*
           * recorder.js functions to help successfully create the blob to load into
