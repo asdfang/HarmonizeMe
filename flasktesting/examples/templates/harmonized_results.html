@@ -108,6 +108,17 @@
          // var buffer;
 
          window.onload = function init() {
+
+            // getting tonic and mode from previous page
+            $.get("/keyData", function(data) {
+               var return_data = data.split(',');
+               tonic = parseInt(return_data[0]);
+               mode = parseInt(return_data[1]);
+
+               console.log(tonic);
+               console.log(mode);
+            });
+
             $.get("/harmonizeData", function(data) {
                harmonized_audio = data;
                //console.log("\nNewdata?: " + newData);

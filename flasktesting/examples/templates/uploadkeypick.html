@@ -120,10 +120,10 @@
          <div class="jumbotron" name="key_selector">
             <p align="center">
                Please select the key of your upload, by selecting a tonic and the mode. <br>
-               Do your best to get it right now, but you can adjust it when you upload!
+               Do your best to get it correct now, but you can adjust it when you upload!
             </p>
 
-            <table align="center">
+            <table id="keypicker" align="center">
                <tr>
                   <td>
                      <div style="float:left; width:100px;" class="form-group">
@@ -163,7 +163,7 @@
                </tr>
                <tr>
                   <td colspan="3" align="center">
-                     <a id="link_to_rangepick" href="{{ url_for('uploadrangepick') }}" class="btn btn-info btn-lg">Harmonize in this key!</a>
+                     <a id="link_to_rangepick" href="{{ url_for('uploadrangepick') }}" class="btn btn-info btn-outline btn-lg">Harmonize in this key!</a>
                   </td>
                </tr>
             </table>

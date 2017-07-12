@@ -75,10 +75,14 @@ i {
     transition: all .3s;
     font-family: Lora;
 }
+.btn-info.btn-outline {
+    color: #5bc0de;
+}
 .btn-primary.btn-outline {
     /*color: #428bca; */
     color:#2a5682;
 }
+.btn-info.btn-outline:hover,
 .btn-primary.btn-outline:hover {
     color: #fff;
 }

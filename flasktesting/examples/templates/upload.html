@@ -134,7 +134,6 @@
          </div>
 
          <br>
-         <!-- TESTING UPLOADING START -->
          <div class="form-group" id="upload" style="text-align:center">
             {% if not session.file_uploaded %}
             <form action="http://127.0.0.1:5000/uploader" method="POST" enctype="multipart/form-data">
@@ -151,8 +150,6 @@
             Uploaded: {% with messages = get_flashed_messages(category_filter=["name_display"]) %} {{ messages[0] }} {% endwith %}
             <form action="http://127.0.0.1:5000/reload">
                <input class="btn btn-info btn-space" type="submit" value="Upload another file" \>
-<!--                <a id="harmonized_upload_link" href="{{ url_for('harmonizedResults') }}" class="btn btn-primary btn-xlarge">Harmonize Me!!</a>
- -->           
             </form>
             <script>
                var original_audio_buffer;
@@ -190,12 +187,50 @@
             <br>
             {% endif %}
          </div>
-
-         <!-- TESTING UPLOADING END -->
-         <div id="replayKey" style="text-align:center">
-            <p align="center">If you need to re-listen to your key, click the button below:</p>
-            <button class="btn btn-success btn-space" type="button" onclick="playKey(this)"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Replay key!</button>
-            <button class="btn btn-success btn-space" type="button" onclick="stopKey(this)" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+         <br>
+         <div id="adjust-key" style="text-align:center">
+            <p align="center">If needed, adjust the key, and press the Harmonize Me button after uploading to confirm the key:</p>
+<!--             <button class="btn btn-success btn-space" type="button" onclick="playKey(this)"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Replay key!</button>
+            <button class="btn btn-success btn-space" type="button" onclick="stopKey(this)" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button> -->
+            <table id="keypicker" align="center">
+               <tr>
+                  <td>
+                     <div style="float:left; width:100px;" class="form-group">
+                        <label for="tonic_picker">Select tonic:</label> <br>
+                        <select id="tonic_picker" class="form-control" onchange="updateTonic(this.value)">
+                           <option value="60">C</option> 
+                           <option value="61">C&#x266f;/D&#x266d;</option>
+                           <option value="62">D</option>
+                           <option value="63">E&#x266d;</option>
+                           <option value="64">E</option>
+                           <option value="65">F</option>
+                           <option value="66">F&#x266f;/G&#x266d;</option>
+                           <option value="67">G</option>
+                           <option value="68">G&#x266f;/A&#x266d;</option>
+                           <option value="69">A</option>
+                           <option value="70">B&#x266d;</option>
+                           <option value="71">B</option>
+                        </select>
+                     </div>
+                  </td>
+                  <td>
+                     <div style="float:left; width:100px;" class="form-group">
+                        <label for="mode_picker">Select mode:</label> <br>
+                        <select id="mode_picker" class="form-control" onchange="updateMode(this.value)">
+                           <option value="0">Major</option> 
+                           <option value="1">Minor</option>
+                        </select>
+                     </div>
+                  </td>
+                  <td>
+                     <div style="float:left; text-align:center" class="form-group">
+                        <br>
+                        <button class="btn btn-success" type="button" onclick="playKey(this)"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play audio!</button>
+                        <button class="btn btn-success" type="button" onclick="stopKey(this)" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
+                     </div>
+                  </td>
+               </tr>
+            </table>
          </div>
       </div>
 
@@ -274,8 +309,12 @@
       wavesurfer.stop();
    }
 
-   function printBufferData(button) {
-      console.log(bufferData);
+   function updateTonic(newTonic) {
+      tonic = parseInt(newTonic);
+   }
+
+   function updateMode(newMode) {
+      mode = parseInt(newMode);
    }
  
    function playKey(button) {
@@ -305,6 +344,12 @@
                curr_audio = null;
          };
       }
+      curr_audio.onended = function() {
+         curr_audio = null;
+         // enable Play and disable Stop buttons when done
+         button.disabled = false;
+         button.nextElementSibling.disabled = true;
+      };
    }
 
    function stopKey(button) {
@@ -390,6 +435,20 @@
          $.post("/harmonizeUploaded", dummy, function(data) {
             dummyData = data;
          });
+            // key stuff
+            var tonic_e = document.getElementById("tonic_picker");
+            var mode_e = document.getElementById("mode_picker");
+
+            // to send to Harmonizer.py
+            var tonic = tonic_e.options[tonic_e.selectedIndex].value;
+            var mode = mode_e.options[mode_e.selectedIndex].value;
+
+            var key = [tonic, mode];
+            var keyString = key.toString();
+
+            $.post("/keyData", keyString, function(data) {
+               console.log("new key data: " + data);
+            });
       }
       window.location.href = "{{ url_for('harmonizedResults') }}";
       harmonized_upload_clicked_once = true;
@@ -406,6 +465,10 @@
          var return_data = data.split(',');
          tonic = parseInt(return_data[0]);
          mode = parseInt(return_data[1]);
+
+         // selecting default key data
+         $("#tonic_picker").val(tonic.toString());
+         $("#mode_picker").val(mode.toString());
       });
 
       initWaveSurfer();
