@@ -105,7 +105,7 @@
             <br>
             <div class="form-group" id="upload" style="text-align:center">
                {% if not session.file_uploaded %}
-               <form action="http://127.0.0.1:5000/uploader" method="POST" enctype="multipart/form-data">
+               <form action="/uploader" method="POST" enctype="multipart/form-data">
                   {% if session.display_warning %}
                   <small class="form-text">Please check for the allowed extensions.</small>
                   {% endif %}
@@ -117,7 +117,7 @@
                <button id="harmonized_upload_link" onclick="harmonizeUpload();" class="btn btn-primary btn-xlarge">Harmonize Me!!</a> </button> <br>
 
                Uploaded: {% with messages = get_flashed_messages(category_filter=["name_display"]) %} {{ messages[0] }} {% endwith %}
-               <form action="http://127.0.0.1:5000/reload">
+               <form action="/reload">
                   <input class="btn btn-info btn-space" type="submit" value="Upload another file" \>
                </form>
                <script>
