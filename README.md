@@ -1,5 +1,6 @@
 # HarmonizeMe
-Web app to make chordal harmony to accompany a user sung input
+Web app to make chordal harmony to accompany a user sung input<br />
+(Old files at HarmonizeMeOldFiles: https://github.com/asdfang/HarmonizeMeOldFiles/)<br />
 
 Dependencies:<br />
 python 2.7.13<br />
