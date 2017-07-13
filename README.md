@@ -1,13 +1,17 @@
 # HarmonizeMe
 Web app to make chordal harmony to accompany a user sung input
 
-Libraries needed: librosa, numpy, aubio
+Libraries:
+flask 0.12.1
+librosa 0.4.2
+aubio 0.4.5
+numpy 1.12.1
+matplotlib 2.0.0
 
-How to use as of 4/10/2017:
-run python script python_tests/Harmonizer.py:
+Running the flask app on local:
+After cloning
+cd HarmonzieMeApp/flaskapp/
+export FLASK_APP="flask_run.py"
+flask run
 
-python python_tests/Harmonizer.py tonicfilename sungmelodyfilename mode
-
-tonicfilename: a sound file containing only one sung note representing the tonic
-sungmelodyfilename: a sound file containing the full melody
-mode: 0 for Major, 1 for minor
+Then go to 127.0.0.1:5000/ on Chrome.
