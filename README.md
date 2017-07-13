@@ -1,11 +1,11 @@
 # HarmonizeMe
 Web app to make chordal harmony to accompany a user sung input
 
-Dependencies:
+Dependencies:<br />
 python 2.7.13<br />
-flask 0.12.1<br />
-librosa 0.4.2<br />
-aubio 0.4.5<br />
+flask 0.12.1 -- pip install flask==0.12.1<br />
+librosa 0.4.2 -- pip install librosa==0.4.2<br />
+aubio 0.4.5 -- python -m pip install aubio<br />
 <br />
 numpy and matplotlib get installed with librosa:
 numpy 1.12.1<br />
