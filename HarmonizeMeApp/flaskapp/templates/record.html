@@ -107,7 +107,7 @@
                <br> <br>
                <!-- hidden at first -->
                <p id="playRecordedInstructions" style="font-size:16px; text-align:center; display:none">
-                  Listen to what you just recorded/uploaded below! You are free to re-record/re-upload if you would like.
+                  Listen to what you just recorded below! You are free to re-record if you would like.
                </p>
                <div id="waveform"></div> <br>
                <div style="text-align:center">
@@ -143,23 +143,7 @@
       var rB; //recordButton
       var p; // a paragraph
       var l; // harmonized_results_link
-      var ull; //harmonized_upload_link
       var harmonized_clicked_once = false;
-      var harmonized_upload_clicked_once = false;
-
-      // to enable/disable 'Upload' button
-      $(document).ready(
-       function(){
-           $('input:file').change(
-               function(){
-                   if ($(this).val()) {
-                       $('input:submit').attr('disabled',false);
-                       // or, as has been pointed out elsewhere:
-                       // $('input:submit').removeAttr('disabled'); 
-                   } 
-               }
-               );
-       });
 
       function linkIsDisabled(classString) {
          return classString.slice(classString.length-9) === " disabled";
@@ -408,21 +392,6 @@
             container: '#waveform',
             scrollParent: true
          });
-      }
-
-      function harmonizeUpload() {
-         ull = document.getElementById('harmonized_upload_link');
-         if (!harmonized_upload_clicked_once)
-         {
-            ull.innerHTML = "Harmonizing now...";
-            dummy = "blah";
-            dummyData = "";
-            $.post("/harmonizeUploaded", dummy, function(data) {
-               dummyData = data;
-            });
-         }
-         window.location.href = "{{ url_for('harmonizedResults') }}";
-         harmonized_upload_clicked_once = true;
       }
 
       window.onload = function init() {
