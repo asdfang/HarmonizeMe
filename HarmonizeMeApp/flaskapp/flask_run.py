@@ -1,5 +1,10 @@
+'''
+flask will always return an string that represents an array (with brackets!) back to the javascript.
+upload_file makes sure to strip away the brackets first, so harmonizeUpload will cast to a np.array correctly.
+'''
+
 from flask import Flask, render_template, request, send_from_directory, make_response, redirect, url_for, session, Markup, flash
-#testing upload
+import sqlite3
 import os
 from werkzeug.utils import secure_filename
 from werkzeug.contrib.cache import SimpleCache
@@ -16,6 +21,13 @@ ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'as@FJ$ZFJO(DI%$F'
 app.config['SESSION_TYPE'] = 'filesystem'
+
+# database
+db = sqlite3.connect('database.db')
+# CREATE TABLE [IF NOT EXISTS] MAINDB (
+
+# 	)
+
 
 @app.route('/')
 def index():
@@ -67,39 +79,38 @@ def harmonizedResults():
 def harmonizeData():
 	if request.method == 'POST':
 		#key data
-		string_data = cache.get('key_data')
+		string_data = cache.get('key_data') # string_data is str
 		string_array = string_data.split(',')
 		tonic = int(string_array[0])
 		mode = int(string_array[1])
 
 		#shift data
-		shift_data = cache.get('shift_data')
+		shift_data = cache.get('shift_data') #shift_data is str
 		
-		audiodata = request.get_data()
+		audiodata = request.get_data() # audiodata is str
 		audiodata = np.fromstring(audiodata, sep=',')
-		original = audiodata
+		original_np = audiodata
 		
 		#normalize
-		if np.max(np.abs(original)) > 1:
-			original = original / np.max(np.abs(original))
-		pythlist_original = original.tolist()
-		cache.set('original_audio', str(pythlist_original))
+		if np.max(np.abs(original_np)) > 1:
+			original_np = original_np / np.max(np.abs(original_np))
 
-		newdata = processAudioWithHarmonies(audiodata, tonic, mode, shift_data)
-		#print newdata
+		pythlist_original = original_np.tolist() # pythlist_original is list, original_np is np.array
+		cache.set('original_audio_str', str(pythlist_original)) # this string has brackets
+
+		newdata = processAudioWithHarmonies(audiodata, tonic, mode, shift_data) #newdata is np.array
 
 		#normalize
 		if np.max(np.abs(newdata)) > 1:
 			newdata = newdata / np.max(np.abs(newdata))
 
-		#do I need to do all of these conversions if the flask cache can do it?
 		#convert to string
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
-		cache.set('harmonized_data', pythliststring)
+		cache.set('harmonized_data_str', pythliststring) # this string  has brackets
 		return pythliststring
 	elif request.method =='GET':
-		return_data = cache.get('harmonized_data')
+		return_data = cache.get('harmonized_data_str') # this string has brackets, JSON needs brackets to parse
 		return return_data
 	else:
 		return "Normal"
@@ -109,31 +120,32 @@ def harmonizedUploaded():
 	if request.method == 'POST':
 		#key data
 		dummy = request.get_data()
-		string_data = cache.get('key_data')
+		string_data = cache.get('key_data') # string_data is str
 		string_array = string_data.split(',')
 		tonic = int(string_array[0])
 		mode = int(string_array[1])
 
 		#shift data
-		shift_data = cache.get('shift_data')
+		shift_data = cache.get('shift_data') # shift_data is str
 
-		audiodata = cache.get('original_audio_np')
-		original = audiodata
+		audiodata = cache.get('original_audio_str') # this string does not have brackets
+		audio_np = np.fromstring(audiodata, sep=',')
+		original = audio_np
 
 		#normalize
 		if np.max(np.abs(original)) > 1:
 			original = original / np.max(np.abs(original))
 		pythlist_original = original.tolist()
-		cache.set('original_audio', str(pythlist_original))
+		cache.set('original_audio_str', str(pythlist_original))
 
-		newdata = processAudioWithHarmonies(audiodata, tonic, mode, shift_data)
+		newdata = processAudioWithHarmonies(audio_np, tonic, mode, shift_data)
 		#normalize
 		if np.max(np.abs(newdata)) > 1:
 			newdata = newdata / np.max(np.abs(newdata))
 
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
-		cache.set('harmonized_data', pythliststring)
+		cache.set('harmonized_data_str', pythliststring) # this string has brackets
 		return pythliststring
 	else:
 		return "Normal"
@@ -141,8 +153,12 @@ def harmonizedUploaded():
 @app.route('/originalAudio', methods=['GET'])
 def originalAudio():
 	if request.method == 'GET':
-		return_data = cache.get('original_audio')
-		cache.set('original_audio', return_data)
+		return_data = cache.get('original_audio_str')
+		cache.set('original_audio_str', return_data)
+
+		# JSON wants brackets
+		if return_data[0] != '[' and return_data[-1] != ']':
+			return_data = '[' + return_data + ']'
 		return return_data
 	else:
 		return "Normal"
@@ -150,7 +166,7 @@ def originalAudio():
 @app.route('/keyData', methods=['GET', 'POST'])
 def keyData():
 	if request.method == 'POST':
-		data = request.get_data()
+		data = request.get_data() # type(data) is str
 		cache.set('key_data', data)
 		return request.get_data()
 	elif request.method == 'GET':
@@ -163,7 +179,7 @@ def keyData():
 @app.route('/shiftData', methods=['POST'])
 def shiftData():
 	if request.method == 'POST':
-		data = request.get_data()
+		data = request.get_data() # type(data) is str
 		cache.set('shift_data', data)
 		return request.get_data()
 	else:
@@ -176,13 +192,24 @@ def send_js(path):
 #oh. it is useful.
 #takes in audio as np.array
 def processAudioWithHarmonies(audio, tonic, mode, shift):
-	array = audio
-	cache.set('original_np', array)
-	#print type(array)
-	newaudio, pitchesmelody_verb, melody_midi, onset_times = harmonizeme(array, tonic, mode, shift)
-	cache.set('pitchesmelody_verb', pitchesmelody_verb)
-	cache.set('melody_midi', melody_midi)
-	cache.set('onset_times', onset_times)
+	newaudio, pitchesmelody_verb, melody_midi, onset_times = harmonizeme(audio, tonic, mode, shift)
+
+	# converting python lists to strings
+	pitchesmelody_verb_str = str(pitchesmelody_verb)
+	melody_midi_str = str(melody_midi)
+	onset_times_str = str(onset_times)
+
+	#stripping brackets
+	pitchesmelody_verb_str = pitchesmelody_verb_str.strip('[')
+	pitchesmelody_verb_str = pitchesmelody_verb_str.strip(']')
+	melody_midi_str = melody_midi_str.strip('[')
+	melody_midi_str = melody_midi_str.strip(']')
+	onset_times_str = onset_times_str.strip('[')
+	onset_times_str = onset_times_str.strip(']')
+
+	cache.set('pitchesmelody_verb', pitchesmelody_verb_str)
+	cache.set('melody_midi', melody_midi_str)
+	cache.set('onset_times', onset_times_str)
 	return newaudio
 
 def allowed_file(filename):
@@ -205,14 +232,20 @@ def upload_file():
 		if f and allowed_file(f.filename):
 			filename = secure_filename(f.filename)
 			f.save(os.path.join(app.config['UPLOAD_FOLDER'], filename))
-			original_audio, sr = librosa.core.load(os.path.join(app.config['UPLOAD_FOLDER'], filename), sr=44100)
-			cache.set("original_audio_np", original_audio)
-			original = original_audio
+			original_np, sr = librosa.core.load(os.path.join(app.config['UPLOAD_FOLDER'], filename), sr=44100)
+
 			#normalize
-			if np.max(np.abs(original)) > 1:
-				original = original / np.max(np.abs(original))
-			pythlist_original = original.tolist()
-			cache.set('original_audio', str(pythlist_original))
+			if np.max(np.abs(original_np)) > 1:
+				original_np = original_np / np.max(np.abs(original_np))
+
+			pythlist_original = original_np.tolist()
+			pythliststring = str(pythlist_original)
+			pythliststring = pythliststring.strip('[')
+			pythliststring = pythliststring.strip(']') # strip brackets away
+			# why do we strip brackets away here? that's how JavaScript has been posting to flask, supposedly
+			# so we strip it for when the first time upload_file sets it in the cache
+
+			cache.set('original_audio_str', pythliststring)	
 
 			os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			session['file_uploaded'] = True
@@ -250,11 +283,22 @@ def plot():
 	hopSize = 128
 
 	#get info needed to plot
-	original_np = cache.get('original_np')
-	pitchesmelody_verb = cache.get('pitchesmelody_verb')
-	melody_midi = cache.get('melody_midi')
-	onset_times = cache.get('onset_times')
+	original_audio_str = cache.get('original_audio_str') # this has brackets
+	cache.set('original_audio_str', original_audio_str)
 
+	# strip brackets to convert to np.array
+	original_audio_str = original_audio_str.strip('[')
+	original_audio_str = original_audio_str.strip(']')
+	original_np = np.fromstring(original_audio_str, sep=',')
+
+	pitchesmelody_verb_str = cache.get('pitchesmelody_verb')
+	melody_midi_str = cache.get('melody_midi')
+	onset_times_str = cache.get('onset_times')
+
+	# converting into np.array
+	pitchesmelody_verb = np.fromstring(pitchesmelody_verb_str, sep=',')
+	melody_midi = np.fromstring(melody_midi_str, sep=',')
+	onset_times = np.fromstring(onset_times_str, sep=',')
 
 	#num timestamps = num results from detector
 	dur = librosa.get_duration(original_np, sr=sampleRate) #in seconds
