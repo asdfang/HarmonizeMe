@@ -455,7 +455,7 @@ def upload_file():
 			pythliststring = pythliststring.strip('[')
 			pythliststring = pythliststring.strip(']') # strip brackets away
 			# why do we strip brackets away here? that's how JavaScript has been posting to flask, supposedly
-			# so we strip it for when the first time upload_file sets it in the cache
+			# so we strip it for when the first time upload_file sets it in the database
 
 			# intro
 			db = get_db()
