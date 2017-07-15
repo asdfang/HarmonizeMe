@@ -7,7 +7,7 @@ from flask import Flask, render_template, request, send_from_directory, make_res
 import sqlite3
 import os
 from werkzeug.utils import secure_filename
-from werkzeug.contrib.cache import SimpleCache
+# from werkzeug.contrib.cache import SimpleCache
 from Harmonizer import *
 import librosa
 import numpy as np
@@ -15,7 +15,7 @@ np.set_printoptions(threshold='nan')
 
 app = Flask(__name__, static_url_path='')
 
-cache = SimpleCache()
+# cache = SimpleCache()
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -28,7 +28,7 @@ app.config['SESSION_TYPE'] = 'filesystem'
 
 DATABASE = 'database.db'
 
-# database table:
+# database table columns:
 # ip_addr, key_data, shift_data, original_audio_str, harmonized_audio_str
 # pitchesmelody_verb_str, melody_midi_str, onset_times_str
 
@@ -81,7 +81,7 @@ def index():
 		"; key_data: " + user['key_data'] + "; shift_data: " + user['shift_data']
 
 	db.commit()
-	close_connection("Normal")
+	# close_connection("Normal")
 
 	session['file_uploaded'] = False
 	session['display_warning'] = False
@@ -186,7 +186,7 @@ def harmonizeData():
 
 		# outro
 		db.commit()
-		close_connection("Normal")
+		# close_connection("Normal")
 		return pythliststring
 	elif request.method =='GET':
 		# intro
@@ -208,7 +208,8 @@ def harmonizeData():
 		# return_data = cache.get('harmonized_audio_str') # this string has brackets, JSON needs brackets to parse
 
 		# outro -- no commit, only got?
-		close_connection("Normal")
+		db.commit()
+		# close_connection("Normal")
 		return return_data
 	else:
 		return "Normal"
@@ -278,7 +279,7 @@ def harmonizedUploaded():
 
 		# outro
 		db.commit()
-		close_connection("Normal")
+		# close_connection("Normal")
 		return pythliststring
 	else:
 		return "Normal"
@@ -311,7 +312,8 @@ def originalAudio():
 
 		# outro
 		# db.commit() no need to commit, only getting information?
-		close_connection("Normal")
+		db.commit()
+		# close_connection("Normal")
 		return return_data
 	else:
 		return "Normal"
@@ -341,7 +343,7 @@ def keyData():
 
 		# outro
 		db.commit()
-		close_connection("Normal")
+		# close_connection("Normal")
 		return key_data
 	elif request.method == 'GET': # GET used by record and upload, for user to re-hear key
 		# intro
@@ -365,7 +367,8 @@ def keyData():
 
 		# outro
 		# db.commit() no need to commit, only getting information?
-		close_connection("Normal")
+		db.commit()
+		# close_connection("Normal")
 		return return_data
 	else:
 		return "Normal"
@@ -394,7 +397,7 @@ def shiftData():
 
 		# outro
 		db.commit()
-		close_connection("Normal")
+		# close_connection("Normal")
 		return shift_data
 	# FUTURE:
 	# there would be a request.method == 'GET' here if we needed to get the information again...for flipping the shift data?
@@ -423,9 +426,31 @@ def processAudioWithHarmonies(audio, tonic, mode, shift):
 	onset_times_str = onset_times_str.strip('[')
 	onset_times_str = onset_times_str.strip(']')
 
-	cache.set('pitchesmelody_verb_str', pitchesmelody_verb_str)
-	cache.set('melody_midi_str', melody_midi_str)
-	cache.set('onset_times_str', onset_times_str)
+
+	# intro
+	db = get_db()
+	cur = get_db().cursor()
+	ip_addr = request.environ['REMOTE_ADDR']
+
+	# making sure that this IP Address already has a row
+	cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+	count = cur.fetchone()[0]
+	if count == 0:
+		error_msg = "IP Address not found"
+		close_connection(error_msg)
+		return error_msg
+
+	# update this IP Address's information
+	cur.execute('UPDATE data SET pitchesmelody_verb_str=? WHERE ip_addr=?', (pitchesmelody_verb_str, ip_addr))
+	cur.execute('UPDATE data SET melody_midi_str=? WHERE ip_addr=?', (melody_midi_str, ip_addr))
+	cur.execute('UPDATE data SET onset_times_str=? WHERE ip_addr=?', (onset_times_str, ip_addr))
+	# cache.set('pitchesmelody_verb_str', pitchesmelody_verb_str)
+	# cache.set('melody_midi_str', melody_midi_str)
+	# cache.set('onset_times_str', onset_times_str)
+
+	# outro
+	db.commit()
+	# close_connection("Normal")
 	return newaudio
 
 def allowed_file(filename):
@@ -480,7 +505,7 @@ def upload_file():
 
 			# outro
 			db.commit()
-			close_connection("Normal")
+			# close_connection("Normal")
 
 			os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			session['file_uploaded'] = True
@@ -517,18 +542,43 @@ def plot():
 	sampleRate = 44100
 	hopSize = 128
 
-	#get info needed to plot
-	original_audio_str = cache.get('original_audio_str') # this has brackets
-	cache.set('original_audio_str', original_audio_str)
+	# intro
+	db = get_db()
+	cur = get_db().cursor()
+	ip_addr = request.environ['REMOTE_ADDR']
+
+	# making sure that this IP Address already has a row
+	cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+	count = cur.fetchone()[0]
+	if count == 0:
+		error_msg = "IP Address not found"
+		close_connection(error_msg)
+		return error_msg
+
+	### get info needed to plot
+	# original_audio_str = cache.get('original_audio_str') # this has brackets
+	# cache.set('original_audio_str', original_audio_str)
+	cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
+	original_audio_str = cur.fetchone()[0]
+	cur.execute('SELECT pitchesmelody_verb_str FROM data WHERE ip_addr=?', (ip_addr,))
+	pitchesmelody_verb_str = cur.fetchone()[0]
+	cur.execute('SELECT melody_midi_str FROM data WHERE ip_addr=?', (ip_addr,))
+	melody_midi_str = cur.fetchone()[0]
+	cur.execute('SELECT onset_times_str FROM data WHERE ip_addr=?', (ip_addr,))
+	onset_times_str = cur.fetchone()[0]
+
+	# outro
+	db.commit()
+	# close_connection("Normal")
 
 	# strip brackets to convert to np.array
 	original_audio_str = original_audio_str.strip('[')
 	original_audio_str = original_audio_str.strip(']')
 	original_np = np.fromstring(original_audio_str, sep=',')
 
-	pitchesmelody_verb_str = cache.get('pitchesmelody_verb_str')
-	melody_midi_str = cache.get('melody_midi_str')
-	onset_times_str = cache.get('onset_times_str')
+	# pitchesmelody_verb_str = cache.get('pitchesmelody_verb_str')
+	# melody_midi_str = cache.get('melody_midi_str')
+	# onset_times_str = cache.get('onset_times_str')
 
 	# converting into np.array
 	pitchesmelody_verb = np.fromstring(pitchesmelody_verb_str, sep=',')
@@ -609,24 +659,3 @@ def plot():
 	response = make_response(png_output.getvalue())
 	response.headers['Content-Type'] = 'image/png'
 	return response
-
-
-#sinwave stuff
-def build_sinwave(num_samples, freq, samplerate):
-	t = np.arange(0, num_samples)/samplerate
-	x = np.sin(2*np.pi*freq*t)
-	return x
-
-def processAudioWithSin(audio):
-	array = np.fromstring(audio, sep=',')
-
-	a440 = build_sinwave(array.size, 440.0, 44100.0)
-
-	audiowithsin = array + a440
-	#normalize:
-	audiowithsin = audiowithsin / np.max(np.abs(audiowithsin))
-
-	#convert to string:
-	pythlist = audiowithsin.tolist()
-	pythliststring = str(pythlist)
-	return pythliststring
