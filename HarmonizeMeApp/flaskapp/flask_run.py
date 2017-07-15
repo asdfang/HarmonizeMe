@@ -7,7 +7,6 @@ from flask import Flask, render_template, request, send_from_directory, make_res
 import sqlite3
 import os
 from werkzeug.utils import secure_filename
-# from werkzeug.contrib.cache import SimpleCache
 from Harmonizer import *
 import librosa
 import numpy as np
@@ -21,10 +20,6 @@ ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'as@FJ$ZFJO(DI%$F'
 app.config['SESSION_TYPE'] = 'filesystem'
-
-# ip address
-# request.environ['REMOTE_ADDR']
-# gets the ip address in a string
 
 DATABASE = 'database.db'
 
@@ -73,12 +68,12 @@ def index():
 		(?, ?, ?, ?, ?, ?, ?, ?)', [ip_addr, "", "", "", "", "", "", ""])
 
 	# printing count and row information -- DEBUG for now
-	cur.execute('SELECT count(*) FROM data')
-	total_count = cur.fetchone()[0]
-	print "Total rows: " + str(total_count)
-	for user in query_db('SELECT * FROM data'):
-		print "ip_addr: " + user['ip_addr'] + \
-		"; key_data: " + user['key_data'] + "; shift_data: " + user['shift_data']
+	# cur.execute('SELECT count(*) FROM data')
+	# total_count = cur.fetchone()[0]
+	# print "Total rows: " + str(total_count)
+	# for user in query_db('SELECT * FROM data'):
+	# 	print "ip_addr: " + user['ip_addr'] + \
+	# 	"; key_data: " + user['key_data'] + "; shift_data: " + user['shift_data']
 
 	db.commit()
 	# close_connection("Normal")
@@ -140,7 +135,6 @@ def harmonizeData():
 			return error_msg
 
 		#key data
-		# string_data = cache.get('key_data') # string_data is str
 		cur.execute('SELECT key_data FROM data WHERE ip_addr=?', (ip_addr,))
 		string_data = cur.fetchone()[0]
 		string_array = string_data.split(',')
@@ -150,7 +144,6 @@ def harmonizeData():
 		#shift data
 		cur.execute('SELECT shift_data FROM data WHERE ip_addr=?', (ip_addr,))
 		shift_data = cur.fetchone()[0]
-		# shift_data = cache.get('shift_data') #shift_data is str
 		
 		# get original audio posted from user, and get np.array version
 		audiodata = request.get_data() # audiodata is str
@@ -164,9 +157,8 @@ def harmonizeData():
 		# converting data to string
 		pythlist_original = original_np.tolist() # pythlist_original is list, original_np is np.array
 		pythliststring = str(pythlist_original)
-		# cache.set('original_audio_str', str(pythlist_original)) # this string has brackets
 
-		# update this IP Address's original_audio_str
+		# update this IP Address's original_audio_str; has brackets
 		cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
 		# GET ACTUAL HARMONIZATION!
@@ -179,9 +171,8 @@ def harmonizeData():
 		#convert to string
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
-		# cache.set('harmonized_audio_str', pythliststring) # this string  has brackets
 
-		# update this IP Address's harmonized_audio_str
+		# update this IP Address's harmonized_audio_str; has brackets
 		cur.execute('UPDATE data SET harmonized_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
 		# outro
@@ -204,8 +195,7 @@ def harmonizeData():
 
 		# get this IP Address's harmonized_audio_str
 		cur.execute('SELECT harmonized_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
-		return_data = cur.fetchone()[0]
-		# return_data = cache.get('harmonized_audio_str') # this string has brackets, JSON needs brackets to parse
+		return_data = cur.fetchone()[0] # has brackets
 
 		# outro -- no commit, only got?
 		db.commit()
@@ -233,7 +223,6 @@ def harmonizedUploaded():
 		dummy = request.get_data()
 
 		#key data
-		# string_data = cache.get('key_data') # string_data is str
 		cur.execute('SELECT key_data FROM data WHERE ip_addr=?', (ip_addr,))
 		string_data = cur.fetchone()[0]
 		string_array = string_data.split(',')
@@ -243,12 +232,10 @@ def harmonizedUploaded():
 		#shift data
 		cur.execute('SELECT shift_data FROM data WHERE ip_addr=?', (ip_addr,))
 		shift_data = cur.fetchone()[0]
-		# shift_data = cache.get('shift_data') # shift_data is str
 
 		# get this IP Address's original_audio_str
 		cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
-		audiodata = cur.fetchone()[0]
-		# audiodata = cache.get('original_audio_str') # this string does not have brackets
+		audiodata = cur.fetchone()[0] # no brackets
 		audio_np = np.fromstring(audiodata, sep=',')
 		original = audio_np
 
@@ -257,7 +244,6 @@ def harmonizedUploaded():
 			original = original / np.max(np.abs(original))
 		pythlist_original = original.tolist()
 		pythliststring = str(pythlist_original)
-		# cache.set('original_audio_str', str(pythlist_original)) 
 
 		# update IP Address's original_audio_str to have brackets
 		cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
@@ -272,9 +258,8 @@ def harmonizedUploaded():
 		# convert to string
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
-		# cache.set('harmonized_audio_str', pythliststring) # this string has brackets
 
-		# update this IP Address's harmonized_audio_str
+		# update this IP Address's harmonized_audio_str; has brackets
 		cur.execute('UPDATE data SET harmonized_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
 		# outro
@@ -302,9 +287,6 @@ def originalAudio():
 
 		cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
 		return_data = cur.fetchone()[0]
-
-		# return_data = cache.get('original_audio_str')
-		# cache.set('original_audio_str', return_data)
 
 		# JSON wants brackets
 		if return_data[0] != '[' and return_data[-1] != ']':
@@ -336,8 +318,6 @@ def keyData():
 
 		key_data = request.get_data() # key_data is str
 
-		# cache.set('key_data', data)
-
 		# update this IP Address's key_data
 		cur.execute('UPDATE data SET key_data=? WHERE ip_addr=?', (key_data, ip_addr))
 
@@ -361,9 +341,6 @@ def keyData():
 
 		cur.execute('SELECT key_data FROM data WHERE ip_addr=?', (ip_addr,))
 		return_data = cur.fetchone()[0]
-
-		#  return_data = cache.get('key_data')
-		#  cache.set('key_data', return_data) #set it again for /bufferData. works!
 
 		# outro
 		# db.commit() no need to commit, only getting information?
@@ -390,7 +367,6 @@ def shiftData():
 			return error_msg
 
 		shift_data = request.get_data() # shift_data is str
-		# cache.set('shift_data', data)
 
 		# update this IP Address's shift_data
 		cur.execute('UPDATE data SET shift_data=? WHERE ip_addr=?', (shift_data, ip_addr))
@@ -426,7 +402,6 @@ def processAudioWithHarmonies(audio, tonic, mode, shift):
 	onset_times_str = onset_times_str.strip('[')
 	onset_times_str = onset_times_str.strip(']')
 
-
 	# intro
 	db = get_db()
 	cur = get_db().cursor()
@@ -444,9 +419,6 @@ def processAudioWithHarmonies(audio, tonic, mode, shift):
 	cur.execute('UPDATE data SET pitchesmelody_verb_str=? WHERE ip_addr=?', (pitchesmelody_verb_str, ip_addr))
 	cur.execute('UPDATE data SET melody_midi_str=? WHERE ip_addr=?', (melody_midi_str, ip_addr))
 	cur.execute('UPDATE data SET onset_times_str=? WHERE ip_addr=?', (onset_times_str, ip_addr))
-	# cache.set('pitchesmelody_verb_str', pitchesmelody_verb_str)
-	# cache.set('melody_midi_str', melody_midi_str)
-	# cache.set('onset_times_str', onset_times_str)
 
 	# outro
 	db.commit()
@@ -499,8 +471,7 @@ def upload_file():
 				close_connection(error_msg)
 				return error_msg
 
-			# update this IP Address's original_audio_str without brackets
-			# cache.set('original_audio_str', pythliststring)	
+			# update this IP Address's original_audio_str; no brackets
 			cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
 			# outro
@@ -556,10 +527,8 @@ def plot():
 		return error_msg
 
 	### get info needed to plot
-	# original_audio_str = cache.get('original_audio_str') # this has brackets
-	# cache.set('original_audio_str', original_audio_str)
 	cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
-	original_audio_str = cur.fetchone()[0]
+	original_audio_str = cur.fetchone()[0] # has brackets
 	cur.execute('SELECT pitchesmelody_verb_str FROM data WHERE ip_addr=?', (ip_addr,))
 	pitchesmelody_verb_str = cur.fetchone()[0]
 	cur.execute('SELECT melody_midi_str FROM data WHERE ip_addr=?', (ip_addr,))
@@ -575,10 +544,6 @@ def plot():
 	original_audio_str = original_audio_str.strip('[')
 	original_audio_str = original_audio_str.strip(']')
 	original_np = np.fromstring(original_audio_str, sep=',')
-
-	# pitchesmelody_verb_str = cache.get('pitchesmelody_verb_str')
-	# melody_midi_str = cache.get('melody_midi_str')
-	# onset_times_str = cache.get('onset_times_str')
 
 	# converting into np.array
 	pitchesmelody_verb = np.fromstring(pitchesmelody_verb_str, sep=',')
@@ -599,7 +564,6 @@ def plot():
 	# f, axarr = plt.subplots(2, figsize=(15,9))
 	green_patch = mpatches.Patch(color='green', label='Detected onsets')
 	black_patch = mpatches.Patch(color='black', label='Detected pitches')
-
 
 	# ax0 is for pitch detection results
 	ax0.legend(handles=[green_patch, black_patch])
