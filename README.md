@@ -16,8 +16,12 @@ Issues with numpy and scipy occured with hosting, so those versions might be nec
 <br /><br />
 Running the flask app on local after cloning repo:<br />
 <br />
+-- Setting up flask:<br />
 cd HarmonzieMeApp/flaskapp/<br />
 export FLASK_APP="flask_run.py"<br />
+-- Seting up database (do this only once, database.db will pop up):<br />
+chmod +x sqlite.py<br />
+./sqlite.py<br />
 flask run<br />
 <br />
 Then go to 127.0.0.1:5000/ on Chrome.<br />
