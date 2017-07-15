@@ -3,7 +3,7 @@ flask will always return an string that represents an array (with brackets!) bac
 upload_file makes sure to strip away the brackets first, so harmonizeUpload will cast to a np.array correctly.
 '''
 
-from flask import Flask, render_template, request, send_from_directory, make_response, redirect, url_for, session, Markup, flash
+from flask import Flask, render_template, request, send_from_directory, make_response, redirect, url_for, session, Markup, flash, g
 import sqlite3
 import os
 from werkzeug.utils import secure_filename
@@ -22,54 +22,102 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'as@FJ$ZFJO(DI%$F'
 app.config['SESSION_TYPE'] = 'filesystem'
 
-# database
-db = sqlite3.connect('database.db')
-# CREATE TABLE [IF NOT EXISTS] MAINDB (
+# ip address
+# request.environ['REMOTE_ADDR']
+# gets the ip address in a string
 
-# 	)
+DATABASE = 'database.db'
+
+# database table:
+# ip_addr, key_data, shift_data, original_audio_str, harmonized_audio_str
+# pitchesmelody_verb_str, melody_midi_str, onset_times_str
+
+# sqlite database stuff
+def get_db():
+	db = getattr(g, '_database', None)
+	if db is None:
+		db = g._database = sqlite3.connect(DATABASE)
+		db.row_factory = sqlite3.Row
+	return db
+
+@app.teardown_appcontext
+def close_connection(exception):
+    db = getattr(g, '_database', None)
+    if db is not None:
+        db.close()
+
+def query_db(query, args=(), one=False):
+    cur = get_db().execute(query, args)
+    rv = cur.fetchall()
+    cur.close()
+    return (rv[0] if rv else None) if one else rv
 
 
+# first page
 @app.route('/')
 def index():
+	db = get_db()
+	cur = get_db().cursor()
+	ip_addr = request.environ['REMOTE_ADDR'] # ip_addr is a string
+
+	# seeing if there is already a row with the same IP Address
+	cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+	count = cur.fetchone()[0] # tuple with just one entry, count is type int
+	if count != 0:
+		cur.execute('DELETE FROM data WHERE ip_addr=?', (ip_addr,))
+
+
+	# adding a new row for this IP Address, with the other columns as empty strings
+	cur.execute('INSERT INTO data (ip_addr, key_data, shift_data, original_audio_str, harmonized_audio_str, \
+		pitchesmelody_verb_str, melody_midi_str, onset_times_str) VALUES \
+		(?, ?, ?, ?, ?, ?, ?, ?)', [ip_addr, "", "", "", "", "", "", ""])
+
+	# printing count and row information
+	cur.execute('SELECT count(*) FROM data')
+	total_count = cur.fetchone()[0]
+	print "Total rows: " + str(total_count)
+	for user in query_db('SELECT * FROM data'):
+		print "ip_addr: " + user['ip_addr'] + \
+		"; key_data: " + user['key_data'] + "; shift_data: " + user['shift_data']
+
+	db.commit()
+	close_connection("Normal")
+
 	session['file_uploaded'] = False
 	session['display_warning'] = False
 	return render_template('index.html')
 
+# second page
 @app.route('/recordkeypick')
 def recordkeypick():
 	return render_template('recordkeypick.html')
 
+# third page
 @app.route('/rangepick')
 def rangepick():
 	return render_template('rangepick.html')
 
+# fourth page
 @app.route('/record')
 def record():
 	return render_template('record.html')
 
-@app.route('/playrecorded')
-def playrecorded():
-	return render_template('playrecorded.html')
-
-
+# second page
 @app.route('/uploadkeypick')
 def uploadkeypick():
 	return render_template('uploadkeypick.html')
 
+# third page
 @app.route('/uploadrangepick')
 def uploadrangepick():
 	return render_template('uploadrangepick.html')
 
+# fourth page
 @app.route('/upload')
 def upload():
 	return render_template('upload.html')
 
-
-
-@app.route('/harmonizer', methods=['GET', 'POST'])
-def harmonizer():
-	return render_template('example_simple_exportwav.html')
-
+# fifth page for both
 @app.route('/harmonizedResults', methods=['GET', 'POST'])
 def harmonizedResults():
 	return render_template('harmonizedresults.html')
@@ -107,10 +155,10 @@ def harmonizeData():
 		#convert to string
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
-		cache.set('harmonized_data_str', pythliststring) # this string  has brackets
+		cache.set('harmonized_audio_str', pythliststring) # this string  has brackets
 		return pythliststring
 	elif request.method =='GET':
-		return_data = cache.get('harmonized_data_str') # this string has brackets, JSON needs brackets to parse
+		return_data = cache.get('harmonized_audio_str') # this string has brackets, JSON needs brackets to parse
 		return return_data
 	else:
 		return "Normal"
@@ -145,7 +193,7 @@ def harmonizedUploaded():
 
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
-		cache.set('harmonized_data_str', pythliststring) # this string has brackets
+		cache.set('harmonized_audio_str', pythliststring) # this string has brackets
 		return pythliststring
 	else:
 		return "Normal"
@@ -163,13 +211,42 @@ def originalAudio():
 	else:
 		return "Normal"
 
+# first post
 @app.route('/keyData', methods=['GET', 'POST'])
 def keyData():
 	if request.method == 'POST':
-		data = request.get_data() # type(data) is str
-		cache.set('key_data', data)
-		return request.get_data()
-	elif request.method == 'GET':
+		db = get_db()
+		cur = get_db().cursor()
+		ip_addr = request.environ['REMOTE_ADDR']
+
+		key_data = request.get_data() # type(data) is str
+
+		# cache.set('key_data', data)
+
+		# making sure that this IP Address already has a row
+		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+		count = cur.fetchone()[0]
+		if count == 0:
+			error_msg = "IP Address not found"
+			close_connection(error_msg)
+			return error_msg
+
+		# update this IP Address's key_data
+		cur.execute('UPDATE data SET key_data=? WHERE ip_addr=?', (key_data, ip_addr))
+
+		# printing count and row information
+		cur.execute('SELECT count(*) FROM data')
+		total_count = cur.fetchone()[0]
+		print "Total rows: " + str(total_count)
+		for user in query_db('SELECT * FROM data'):
+			print "ip_addr: " + user['ip_addr'] + \
+			"; key_data: " + user['key_data'] + "; shift_data: " + user['shift_data']
+
+		db.commit()
+		close_connection("Normal")
+
+		return key_data
+	elif request.method == 'GET': # GET used by record and upload, for user to re-hear key
 		return_data = cache.get('key_data')
 		cache.set('key_data', return_data) #set it again for /bufferData. works!
 		return return_data
@@ -207,9 +284,9 @@ def processAudioWithHarmonies(audio, tonic, mode, shift):
 	onset_times_str = onset_times_str.strip('[')
 	onset_times_str = onset_times_str.strip(']')
 
-	cache.set('pitchesmelody_verb', pitchesmelody_verb_str)
-	cache.set('melody_midi', melody_midi_str)
-	cache.set('onset_times', onset_times_str)
+	cache.set('pitchesmelody_verb_str', pitchesmelody_verb_str)
+	cache.set('melody_midi_str', melody_midi_str)
+	cache.set('onset_times_str', onset_times_str)
 	return newaudio
 
 def allowed_file(filename):
@@ -291,9 +368,9 @@ def plot():
 	original_audio_str = original_audio_str.strip(']')
 	original_np = np.fromstring(original_audio_str, sep=',')
 
-	pitchesmelody_verb_str = cache.get('pitchesmelody_verb')
-	melody_midi_str = cache.get('melody_midi')
-	onset_times_str = cache.get('onset_times')
+	pitchesmelody_verb_str = cache.get('pitchesmelody_verb_str')
+	melody_midi_str = cache.get('melody_midi_str')
+	onset_times_str = cache.get('onset_times_str')
 
 	# converting into np.array
 	pitchesmelody_verb = np.fromstring(pitchesmelody_verb_str, sep=',')
