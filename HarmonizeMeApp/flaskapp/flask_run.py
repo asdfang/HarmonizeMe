@@ -14,7 +14,6 @@ np.set_printoptions(threshold='nan')
 
 app = Flask(__name__, static_url_path='')
 
-# cache = SimpleCache()
 UPLOAD_FOLDER = 'uploads'
 ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
