@@ -72,7 +72,7 @@ def index():
 		pitchesmelody_verb_str, melody_midi_str, onset_times_str) VALUES \
 		(?, ?, ?, ?, ?, ?, ?, ?)', [ip_addr, "", "", "", "", "", "", ""])
 
-	# printing count and row information
+	# printing count and row information -- DEBUG for now
 	cur.execute('SELECT count(*) FROM data')
 	total_count = cur.fetchone()[0]
 	print "Total rows: " + str(total_count)
@@ -149,7 +149,8 @@ def harmonizeData():
 
 		#shift data
 		cur.execute('SELECT shift_data FROM data WHERE ip_addr=?', (ip_addr,))
-		shift_data = cache.get('shift_data') #shift_data is str
+		shift_data = cur.fetchone()[0]
+		# shift_data = cache.get('shift_data') #shift_data is str
 		
 		# get original audio posted from user, and get np.array version
 		audiodata = request.get_data() # audiodata is str
@@ -183,14 +184,6 @@ def harmonizeData():
 		# update this IP Address's harmonized_audio_str
 		cur.execute('UPDATE data SET harmonized_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
-		# printing count and row information -- DEBUG for now
-		cur.execute('SELECT count(*) FROM data')
-		total_count = cur.fetchone()[0]
-		print "Total rows: " + str(total_count)
-		for user in query_db('SELECT * FROM data'):
-			print "ip_addr: " + user['ip_addr'] + \
-			"; key_data: " + user['key_data'] + "; shift_data: " + user['shift_data']
-
 		# outro
 		db.commit()
 		close_connection("Normal")
@@ -223,17 +216,38 @@ def harmonizeData():
 @app.route('/harmonizeUploaded', methods=['GET', 'POST'])
 def harmonizedUploaded():
 	if request.method == 'POST':
-		#key data
+		# intro
+		db = get_db()
+		cur = get_db().cursor()
+		ip_addr = request.environ['REMOTE_ADDR']
+
+		# making sure that this IP Address already has a row
+		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+		count = cur.fetchone()[0]
+		if count == 0:
+			error_msg = "IP Address not found"
+			close_connection(error_msg)
+			return error_msg
+
 		dummy = request.get_data()
-		string_data = cache.get('key_data') # string_data is str
+
+		#key data
+		# string_data = cache.get('key_data') # string_data is str
+		cur.execute('SELECT key_data FROM data WHERE ip_addr=?', (ip_addr,))
+		string_data = cur.fetchone()[0]
 		string_array = string_data.split(',')
 		tonic = int(string_array[0])
 		mode = int(string_array[1])
 
 		#shift data
-		shift_data = cache.get('shift_data') # shift_data is str
+		cur.execute('SELECT shift_data FROM data WHERE ip_addr=?', (ip_addr,))
+		shift_data = cur.fetchone()[0]
+		# shift_data = cache.get('shift_data') # shift_data is str
 
-		audiodata = cache.get('original_audio_str') # this string does not have brackets
+		# get this IP Address's original_audio_str
+		cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
+		audiodata = cur.fetchone()[0]
+		# audiodata = cache.get('original_audio_str') # this string does not have brackets
 		audio_np = np.fromstring(audiodata, sep=',')
 		original = audio_np
 
@@ -241,16 +255,30 @@ def harmonizedUploaded():
 		if np.max(np.abs(original)) > 1:
 			original = original / np.max(np.abs(original))
 		pythlist_original = original.tolist()
-		cache.set('original_audio_str', str(pythlist_original))
+		pythliststring = str(pythlist_original)
+		# cache.set('original_audio_str', str(pythlist_original)) 
 
+		# update IP Address's original_audio_str to have brackets
+		cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
+
+		# GET ACTUAL HARMONIZATION!
 		newdata = processAudioWithHarmonies(audio_np, tonic, mode, shift_data)
+
 		#normalize
 		if np.max(np.abs(newdata)) > 1:
 			newdata = newdata / np.max(np.abs(newdata))
 
+		# convert to string
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
-		cache.set('harmonized_audio_str', pythliststring) # this string has brackets
+		# cache.set('harmonized_audio_str', pythliststring) # this string has brackets
+
+		# update this IP Address's harmonized_audio_str
+		cur.execute('UPDATE data SET harmonized_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
+
+		# outro
+		db.commit()
+		close_connection("Normal")
 		return pythliststring
 	else:
 		return "Normal"
@@ -280,11 +308,14 @@ def originalAudio():
 		# JSON wants brackets
 		if return_data[0] != '[' and return_data[-1] != ']':
 			return_data = '[' + return_data + ']'
+
+		# outro
+		# db.commit() no need to commit, only getting information?
+		close_connection("Normal")
 		return return_data
 	else:
 		return "Normal"
 
-# first post
 @app.route('/keyData', methods=['GET', 'POST'])
 def keyData():
 	if request.method == 'POST':
@@ -430,7 +461,26 @@ def upload_file():
 			# why do we strip brackets away here? that's how JavaScript has been posting to flask, supposedly
 			# so we strip it for when the first time upload_file sets it in the cache
 
-			cache.set('original_audio_str', pythliststring)	
+			# intro
+			db = get_db()
+			cur = get_db().cursor()
+			ip_addr = request.environ['REMOTE_ADDR']
+
+			# making sure that this IP Address already has a row
+			cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+			count = cur.fetchone()[0]
+			if count == 0:
+				error_msg = "IP Address not found"
+				close_connection(error_msg)
+				return error_msg
+
+			# update this IP Address's original_audio_str without brackets
+			# cache.set('original_audio_str', pythliststring)	
+			cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
+
+			# outro
+			db.commit()
+			close_connection("Normal")
 
 			os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			session['file_uploaded'] = True
