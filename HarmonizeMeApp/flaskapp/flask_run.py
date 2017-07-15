@@ -126,6 +126,19 @@ def harmonizedResults():
 @app.route('/harmonizeData', methods=['GET', 'POST'])
 def harmonizeData():
 	if request.method == 'POST':
+		# intro
+		db = get_db()
+		cur = get_db().cursor()
+		ip_addr = request.environ['REMOTE_ADDR']
+
+		# making sure that this IP Address already has a row
+		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+		count = cur.fetchone()[0]
+		if count == 0:
+			error_msg = "IP Address not found"
+			close_connection(error_msg)
+			return error_msg
+
 		#key data
 		string_data = cache.get('key_data') # string_data is str
 		string_array = string_data.split(',')
@@ -215,13 +228,10 @@ def originalAudio():
 @app.route('/keyData', methods=['GET', 'POST'])
 def keyData():
 	if request.method == 'POST':
+		# intro
 		db = get_db()
 		cur = get_db().cursor()
 		ip_addr = request.environ['REMOTE_ADDR']
-
-		key_data = request.get_data() # type(data) is str
-
-		# cache.set('key_data', data)
 
 		# making sure that this IP Address already has a row
 		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -231,24 +241,40 @@ def keyData():
 			close_connection(error_msg)
 			return error_msg
 
+		key_data = request.get_data() # key_data is str
+
+		# cache.set('key_data', data)
+		
 		# update this IP Address's key_data
 		cur.execute('UPDATE data SET key_data=? WHERE ip_addr=?', (key_data, ip_addr))
 
-		# printing count and row information
-		cur.execute('SELECT count(*) FROM data')
-		total_count = cur.fetchone()[0]
-		print "Total rows: " + str(total_count)
-		for user in query_db('SELECT * FROM data'):
-			print "ip_addr: " + user['ip_addr'] + \
-			"; key_data: " + user['key_data'] + "; shift_data: " + user['shift_data']
-
+		# outro
 		db.commit()
 		close_connection("Normal")
-
 		return key_data
 	elif request.method == 'GET': # GET used by record and upload, for user to re-hear key
-		return_data = cache.get('key_data')
-		cache.set('key_data', return_data) #set it again for /bufferData. works!
+		# intro
+		db = get_db()
+		cur = get_db().cursor()
+		ip_addr = request.environ['REMOTE_ADDR']
+
+		# making sure that this IP Address already has a row
+		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+		count = cur.fetchone()[0]
+		if count == 0:
+			error_msg = "IP Address not found"
+			close_connection(error_msg)
+			return error_msg
+
+		cur.execute('SELECT key_data FROM data WHERE ip_addr=?', (ip_addr,))
+		return_data = cur.fetchone()[0]
+
+		#  return_data = cache.get('key_data')
+		#  cache.set('key_data', return_data) #set it again for /bufferData. works!
+
+		# outro
+		db.commit()
+		close_connection("Normal")
 		return return_data
 	else:
 		return "Normal"
@@ -256,9 +282,40 @@ def keyData():
 @app.route('/shiftData', methods=['POST'])
 def shiftData():
 	if request.method == 'POST':
-		data = request.get_data() # type(data) is str
-		cache.set('shift_data', data)
-		return request.get_data()
+		# intro
+		db = get_db()
+		cur = get_db().cursor()
+		ip_addr = request.environ['REMOTE_ADDR']
+
+		# making sure that this IP Address already has a row
+		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+		count = cur.fetchone()[0]
+		if count == 0:
+			error_msg = "IP Address not found"
+			close_connection(error_msg)
+			return error_msg
+
+		shift_data = request.get_data() # shift_data is str
+		# cache.set('shift_data', data)
+
+
+		# update this IP Address's shift_data
+		cur.execute('UPDATE data SET shift_data=? WHERE ip_addr=?', (shift_data, ip_addr))
+
+		# printing count and row information -- DEBUG for now
+		cur.execute('SELECT count(*) FROM data')
+		total_count = cur.fetchone()[0]
+		print "Total rows: " + str(total_count)
+		for user in query_db('SELECT * FROM data'):
+			print "ip_addr: " + user['ip_addr'] + \
+			"; key_data: " + user['key_data'] + "; shift_data: " + user['shift_data']
+
+		# outro
+		db.commit()
+		close_connection("Normal")
+		return shift_data
+	# FUTURE:
+	# there would be a request.method == 'GET' here if we needed to get the information again...for flipping the shift data?
 	else:
 		return "Normal"
 
