@@ -18,6 +18,9 @@
       <script src="/static/jquery-3.2.1.min.js"></script>
       <script src="../static/bootstrap-3.3.7-dist/js/bootstrap.min.js"></script>
 
+      <!-- Custom fonts from Google-->
+      <link href="https://fonts.googleapis.com/css?family=Lato|Lora|Merriweather|Montserrat" rel="stylesheet">
+
       <!-- wavesurfer.js -->
       <script src="https://cdnjs.cloudflare.com/ajax/libs/wavesurfer.js/1.0.52/wavesurfer.min.js"></script>
 
@@ -32,7 +35,11 @@
       </nav>
 
       <div class="container">
-         <h3 align="center">Hear your harmonization!</h3>
+         <div id="instructions" class="container">
+            <div class="row">
+               <div class="col-xs-3 num"><span class="instr">4.</span></div><div class="col-xs-9 instr"><span class="instr"><i>Hear</i> your harmonization</span></div>
+            </div>
+         </div>
 
          <div class="jumbotron">
             <div id="waveform"></div> <br>
@@ -75,13 +82,6 @@
          var aB, aB2; // audioBlob, audioBlob2
 
          window.onload = function init() {
-            // getting tonic and mode from previous page
-            $.get("/keyData", function(data) {
-               var return_data = data.split(',');
-               tonic = parseInt(return_data[0]);
-               mode = parseInt(return_data[1]);
-            });
-
             $.get("/harmonizeData", function(data) {
                harmonized_audio = data;
                harmonized_audio = new Float32Array(JSON.parse(harmonized_audio));
