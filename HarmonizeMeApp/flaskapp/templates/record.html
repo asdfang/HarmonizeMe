@@ -426,7 +426,7 @@
             {
                l.innerHTML = "Harmonizing now...";
                strData = bufferData.toString();
-               newData = ""
+               newData = "";
                $.post("/harmonizeData", strData, function(data) {
                   newData = data;
                   var newFloatData = new Float32Array(JSON.parse(newData));
@@ -434,7 +434,7 @@
                   newChannelData.push(newFloatData);
 
                   // clear before it gives it new data
-                  recorder.clear();
+                  // recorder.clear();
                   
                   //recorder.setBuffer(newChannelData);
                });

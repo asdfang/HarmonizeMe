@@ -164,8 +164,9 @@ def harmonizeData():
 		pythlist_original = original_np.tolist() # pythlist_original is list, original_np is np.array
 		pythliststring = str(pythlist_original)
 
+		print "hello"
 		print "length of pythliststring: " + str(len(pythliststring))
-		
+
 		# update this IP Address's original_audio_str; has brackets
 		cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
