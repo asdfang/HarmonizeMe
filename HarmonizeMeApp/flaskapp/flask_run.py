@@ -15,12 +15,12 @@ np.set_printoptions(threshold='nan')
 app = Flask(__name__, static_url_path='')
 
 # for server
-UPLOAD_FOLDER = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/uploads'
-DATABASE = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/database.db'
+# UPLOAD_FOLDER = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/uploads'
+# DATABASE = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/database.db'
 
 # for local
-# UPLOAD_FOLDER = 'uploads'
-# DATABASE = 'database.db'
+UPLOAD_FOLDER = 'uploads'
+DATABASE = 'database.db'
 
 ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
@@ -28,9 +28,6 @@ app.config['DATABASE'] = DATABASE
 
 app.secret_key = 'as@FJ$ZFJO(DI%$F'
 app.config['SESSION_TYPE'] = 'filesystem'
-
-
-
 
 # database table columns:
 # ip_addr, key_data, shift_data, original_audio_str, harmonized_audio_str
@@ -85,7 +82,7 @@ def index():
 	# 	"; key_data: " + user['key_data'] + "; shift_data: " + user['shift_data']
 
 	db.commit()
-	# close_connection("Normal")
+	close_connection("Normal")
 
 	session['file_uploaded'] = False
 	session['display_warning'] = False
@@ -170,6 +167,8 @@ def harmonizeData():
 		# update this IP Address's original_audio_str; has brackets
 		cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
+		db.commit()
+
 		# GET ACTUAL HARMONIZATION!
 		newdata = processAudioWithHarmonies(audiodata, tonic, mode, shift_data) #newdata is np.array
 
@@ -186,7 +185,7 @@ def harmonizeData():
 
 		# outro
 		db.commit()
-		# close_connection("Normal")
+		close_connection("Normal")
 		return pythliststring
 	elif request.method =='GET':
 		# intro
@@ -208,7 +207,7 @@ def harmonizeData():
 
 		# outro -- no commit, only got?
 		db.commit()
-		# close_connection("Normal")
+		close_connection("Normal")
 		return return_data
 	else:
 		return "Normal"
@@ -257,6 +256,8 @@ def harmonizedUploaded():
 		# update IP Address's original_audio_str to have brackets
 		cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
+		db.commit()
+
 		# GET ACTUAL HARMONIZATION!
 		newdata = processAudioWithHarmonies(audio_np, tonic, mode, shift_data)
 
@@ -273,7 +274,7 @@ def harmonizedUploaded():
 
 		# outro
 		db.commit()
-		# close_connection("Normal")
+		close_connection("Normal")
 		return pythliststring
 	else:
 		return "Normal"
@@ -304,7 +305,7 @@ def originalAudio():
 		# outro
 		# db.commit() no need to commit, only getting information?
 		db.commit()
-		# close_connection("Normal")
+		close_connection("Normal")
 		return return_data
 	else:
 		return "Normal"
@@ -354,7 +355,7 @@ def keyData():
 		# outro
 		# db.commit() no need to commit, only getting information?
 		db.commit()
-		# close_connection("Normal")
+		close_connection("Normal")
 		return return_data
 	else:
 		return "Normal"
@@ -382,7 +383,7 @@ def shiftData():
 
 		# outro
 		db.commit()
-		# close_connection("Normal")
+		close_connection("Normal")
 		return shift_data
 	# FUTURE:
 	# there would be a request.method == 'GET' here if we needed to get the information again...for flipping the shift data?
@@ -431,7 +432,6 @@ def processAudioWithHarmonies(audio, tonic, mode, shift):
 
 	# outro
 	db.commit()
-	# close_connection("Normal")
 	return newaudio
 
 def allowed_file(filename):
@@ -485,7 +485,7 @@ def upload_file():
 
 			# outro
 			db.commit()
-			# close_connection("Normal")
+			close_connection("Normal")
 
 			os.remove(os.path.join(app.config['UPLOAD_FOLDER'], filename))
 			session['file_uploaded'] = True
@@ -540,6 +540,7 @@ def getAudios():
 
 		# outro
 		db.commit()
+		close_connection("Normal")
 		return harmonized_original_str
 	else:
 		return "Normal"
@@ -582,7 +583,7 @@ def plot():
 
 	# outro
 	db.commit()
-	# close_connection("Normal")
+	close_connection("Normal")
 
 	# strip brackets to convert to np.array
 	original_audio_str = original_audio_str.strip('[')
