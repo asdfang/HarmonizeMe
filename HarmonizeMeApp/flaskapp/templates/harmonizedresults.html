@@ -82,16 +82,28 @@
          var aB, aB2; // audioBlob, audioBlob2
 
          window.onload = function init() {
-            $.get("/harmonizeData", function(data) {
-               harmonized_audio = data;
-               harmonized_audio = new Float32Array(JSON.parse(harmonized_audio));
+            // $.get("/harmonizeData", function(data) {
+            //    harmonized_audio = data;
+            //    harmonized_audio = new Float32Array(JSON.parse(harmonized_audio));
+            //    initWaveSurfer();
+            //    makeDownloadLink();
+            // });
+
+            // $.get("/originalAudio", function(data) {
+            //    original_audio = data;
+            //    original_audio = new Float32Array(JSON.parse(original_audio));
+            //    initWaveSurfer2();
+            //    makeDownloadLink2();
+            // });
+
+            $.get("/getAudios", function(data) {
+               var return_data = data.split(';');
+               harmonized_audio = new Float32Array(JSON.parse(return_data[0]));
+               original_audio = new Float32Array(JSON.parse(return_data[1]));
+               
                initWaveSurfer();
                makeDownloadLink();
-            });
 
-            $.get("/originalAudio", function(data) {
-               original_audio = data;
-               original_audio = new Float32Array(JSON.parse(original_audio));
                initWaveSurfer2();
                makeDownloadLink2();
             });

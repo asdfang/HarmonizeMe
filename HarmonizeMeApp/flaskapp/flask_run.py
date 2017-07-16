@@ -35,7 +35,7 @@ app.config['SESSION_TYPE'] = 'filesystem'
 def get_db():
 	db = getattr(g, '_database', None)
 	if db is None:
-		db = g._database = sqlite3.connect(app.config['DATABASE'], timeout=15)
+		db = g._database = sqlite3.connect(app.config['DATABASE'])
 		db.row_factory = sqlite3.Row
 	return db
 
@@ -503,6 +503,41 @@ def reload():
 	session['file_uploaded'] = False
 	return render_template('upload.html')
 
+# gets both audio files, to try and not have the database accessed concurrently
+@app.route('/getAudios', methods=['GET'])
+def getAudios():
+	if request.method == 'GET':
+		# intro
+		db = get_db()
+		cur = get_db().cursor()
+		ip_addr = request.environ['REMOTE_ADDR']
+
+		# making sure that this IP Address already has a row
+		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
+		count = cur.fetchone()[0]
+		if count == 0:
+			error_msg = "IP Address not found"
+			close_connection(error_msg)
+			return error_msg
+
+		cur.execute('SELECT harmonized_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
+		harmonized_audio_str = cur.fetchone()[0]
+
+		cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
+		original_audio_str = cur.fetchone()[0]
+
+		print "harmonized_audio_str length of string: " + str(len(harmonized_audio_str))
+		print "original_audio_str length of string: " + str(len(original_audio_str))
+
+		harmonized_original_str = harmonized_audio_str + ';' + original_audio_str
+
+		print "harmonized_original_str length of string: " + str(len(harmonized_original_str))
+		return harmonized_original_str
+
+		# outro
+		db.commit()
+	else:
+		return "Normal"
 
 #real matplot
 @app.route('/plot')
