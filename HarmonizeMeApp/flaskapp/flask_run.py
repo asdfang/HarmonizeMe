@@ -14,16 +14,17 @@ np.set_printoptions(threshold='nan')
 
 app = Flask(__name__, static_url_path='')
 
-UPLOAD_FOLDER = 'uploads'
-DATABASE = 'database.db'
+UPLOAD_FOLDER = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/uploads'
+DATABASE = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/database.db'
 
 ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['DATABASE'] = DATABASE
+
 app.secret_key = 'as@FJ$ZFJO(DI%$F'
 app.config['SESSION_TYPE'] = 'filesystem'
 
 
-app.config['DATABASE'] = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/database.db'
 
 
 # database table columns:
@@ -290,6 +291,8 @@ def originalAudio():
 
 		cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
 		return_data = cur.fetchone()[0]
+
+		print "trying to add brackets: " + return_data
 
 		# JSON wants brackets
 		if return_data[0] != '[' and return_data[-1] != ']':
