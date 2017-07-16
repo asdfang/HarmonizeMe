@@ -14,8 +14,13 @@ np.set_printoptions(threshold='nan')
 
 app = Flask(__name__, static_url_path='')
 
+# for server
 UPLOAD_FOLDER = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/uploads'
 DATABASE = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/database.db'
+
+# for local
+# UPLOAD_FOLDER = 'uploads'
+# DATABASE = 'database.db'
 
 ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
