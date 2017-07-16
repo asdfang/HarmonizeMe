@@ -537,10 +537,10 @@ def getAudios():
 		harmonized_original_str = harmonized_audio_str + ';' + original_audio_str
 
 		print "harmonized_original_str length of string: " + str(len(harmonized_original_str))
-		return harmonized_original_str
 
 		# outro
 		db.commit()
+		return harmonized_original_str
 	else:
 		return "Normal"
 
