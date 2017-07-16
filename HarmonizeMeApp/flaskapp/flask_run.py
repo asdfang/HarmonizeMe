@@ -292,8 +292,6 @@ def originalAudio():
 		cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
 		return_data = cur.fetchone()[0]
 
-		print "trying to add brackets: " + return_data
-
 		# JSON wants brackets
 		if return_data[0] != '[' and return_data[-1] != ']':
 			return_data = '[' + return_data + ']'
