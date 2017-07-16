@@ -15,12 +15,16 @@ np.set_printoptions(threshold='nan')
 app = Flask(__name__, static_url_path='')
 
 UPLOAD_FOLDER = 'uploads'
+DATABASE = 'database.db'
+
 ALLOWED_EXTENSIONS = set(['wav', 'mp3'])
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 app.secret_key = 'as@FJ$ZFJO(DI%$F'
 app.config['SESSION_TYPE'] = 'filesystem'
 
-DATABASE = 'database.db'
+
+app.config['DATABASE'] = '/home/asdfang/gitfldr/HarmonizeMe/HarmonizeMeApp/flaskapp/database.db'
+
 
 # database table columns:
 # ip_addr, key_data, shift_data, original_audio_str, harmonized_audio_str
@@ -30,7 +34,7 @@ DATABASE = 'database.db'
 def get_db():
 	db = getattr(g, '_database', None)
 	if db is None:
-		db = g._database = sqlite3.connect(DATABASE)
+		db = g._database = sqlite3.connect(app.config['DATABASE'])
 		db.row_factory = sqlite3.Row
 	return db
 
