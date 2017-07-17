@@ -127,6 +127,7 @@ def harmonizedResults():
 @app.route('/harmonizeData', methods=['GET', 'POST'])
 def harmonizeData():
 	if request.method == 'POST':
+		print "harmonizeData POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -191,6 +192,7 @@ def harmonizeData():
 		close_connection("Normal")
 		return pythliststring
 	elif request.method =='GET':
+		print "harmonizeData GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -218,6 +220,7 @@ def harmonizeData():
 @app.route('/harmonizeUploaded', methods=['GET', 'POST'])
 def harmonizedUploaded():
 	if request.method == 'POST':
+		print "harmonizedUploaded POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -285,6 +288,7 @@ def harmonizedUploaded():
 @app.route('/originalAudio', methods=['GET'])
 def originalAudio():
 	if request.method == 'GET':
+		print "originalAudio GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -316,6 +320,7 @@ def originalAudio():
 @app.route('/keyData', methods=['GET', 'POST'])
 def keyData():
 	if request.method == 'POST':
+		print "keyData POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -339,6 +344,7 @@ def keyData():
 		# close_connection("Normal")
 		return key_data
 	elif request.method == 'GET': # GET used by record and upload, for user to re-hear key
+		print "keyData GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -366,6 +372,7 @@ def keyData():
 @app.route('/shiftData', methods=['POST'])
 def shiftData():
 	if request.method == 'POST':
+		print "shiftData POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -400,6 +407,7 @@ def send_js(path):
 #oh. it is useful.
 #takes in audio as np.array
 def processAudioWithHarmonies(audio, tonic, mode, shift):
+	print "processAudioWithHarmonies"
 	newaudio, pitchesmelody_verb, melody_midi, onset_times = harmonizeme(audio, tonic, mode, shift)
 
 	# converting python lists to strings
@@ -441,9 +449,10 @@ def allowed_file(filename):
 	return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 #uploads file
-@app.route('/uploader', methods=['GET', 'POST'])
+@app.route('/uploader', methods=['POST'])
 def upload_file():
 	if request.method == 'POST':
+		print "upload_file POST"
 		# check if the post request has the file part
 		if 'file' not in request.files:
 			flash('No file part')
@@ -499,6 +508,8 @@ def upload_file():
 		else:
 			session['display_warning'] = True
 			return render_template('upload.html')
+	else:
+		return "Normal"
 
 
 #gets uploaded file
@@ -515,6 +526,7 @@ def reload():
 @app.route('/getAudios', methods=['GET'])
 def getAudios():
 	if request.method == 'GET':
+		print "getAudios GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -551,6 +563,7 @@ def getAudios():
 #real matplot
 @app.route('/plot')
 def plot():
+	print "plotting"
 	import StringIO
 
 	import matplotlib.pyplot as plt
