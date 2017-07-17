@@ -402,10 +402,8 @@
             console.log("harmonized button clicked...");
             l.innerHTML = "Harmonizing now...";
             strData = bufferData.toString();
-            console.log(strData);
             newData = "";
-            test = "0.1234, 0.4321";
-            $.post("/harmonizeData", test, function(data) {
+            $.post("/harmonizeData", strData, function(data) {
                newData = data;
                // var newFloatData = new Float32Array(JSON.parse(newData));
                // var newChannelData = [];
