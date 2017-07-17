@@ -100,9 +100,10 @@
                <button id="recordButton" class="btn btn-info btn-space" onclick="startRecording(this);"><span class="glyphicon glyphicon-record" aria-hidden="true"></span> Record</button>
                <button class="btn btn-info btn-space" onclick="pauseRecording(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
                <button class="btn btn-info btn-space" onclick="stopRecording(this);" style="margin-right:64px" disabled><span class="glyphicon glyphicon-stop" aria-hidden="true"></span> Stop</button>
-               <!-- <button class="btn btn-primary" onclick="harmonize(this);">Harmonize!!</button> <br><br> -->
+               <button id="harmonized_results_link" class="btn btn-primary btn-xlarge disabled" onclick="harmonize();">Harmonize!!</button>
                <!-- testing: -->
-               <a id="harmonized_results_link" href="{{ url_for('harmonizedResults') }}" class="btn btn-primary btn-xlarge disabled">Harmonize Me!!</a> 
+               <!-- <a id="harmonized_results_link" href="{{ url_for('harmonizedResults') }}" class="btn btn-primary btn-xlarge disabled">Harmonize Me!!</a>  -->
+
 
                <br> <br>
                <!-- hidden at first -->
@@ -394,6 +395,32 @@
          });
       }
 
+      function harmonize() {
+         // to avoid having multiple clicks to it make it blow up, but to also not completely disable the link.
+         if (!harmonized_clicked_once)
+         {
+            console.log("harmonized button clicked...");
+            l.innerHTML = "Harmonizing now...";
+            strData = bufferData.toString();
+            console.log(strData);
+            newData = "";
+            test = "0.1234, 0.4321";
+            $.post("/harmonizeData", test, function(data) {
+               newData = data;
+               // var newFloatData = new Float32Array(JSON.parse(newData));
+               // var newChannelData = [];
+               // newChannelData.push(newFloatData);
+
+               // clear before it gives it new data
+               // recorder.clear();
+               
+               //recorder.setBuffer(newChannelData);
+               window.location.href = "{{ url_for('harmonizedResults') }}";
+            });
+            harmonized_clicked_once = true;
+         }
+      }
+
       window.onload = function init() {
 
          console.log("Console messages starting with __ signify logging from the recorder");
@@ -418,30 +445,31 @@
          // link listener; needs to post processed audio onto server before moving onto the next page
          var harmonized_results_link = document.getElementById("harmonized_results_link");
 
-         harmonized_results_link.onclick = function() {
-            // to avoid having multiple clicks to it make it blow up, but to also not completely disable the link.
-            if (!harmonized_clicked_once)
-            {
-               console.log("harmonized button clicked...");
-               l.innerHTML = "Harmonizing now...";
-               strData = bufferData.toString();
-               console.log(strData);
-               newData = "";
-               test = "0.1234, 0.4321";
-               $.post("/harmonizeData", test, function(data) {
-                  newData = data;
-                  // var newFloatData = new Float32Array(JSON.parse(newData));
-                  // var newChannelData = [];
-                  // newChannelData.push(newFloatData);
+         // harmonized_results_link.onclick = function() {
+            // // to avoid having multiple clicks to it make it blow up, but to also not completely disable the link.
+            // if (!harmonized_clicked_once)
+            // {
+            //    console.log("harmonized button clicked...");
+            //    l.innerHTML = "Harmonizing now...";
+            //    strData = bufferData.toString();
+            //    console.log(strData);
+            //    newData = "";
+            //    test = "0.1234, 0.4321";
+            //    $.post("/harmonizeData", test, function(data) {
+            //       newData = data;
+            //       // var newFloatData = new Float32Array(JSON.parse(newData));
+            //       // var newChannelData = [];
+            //       // newChannelData.push(newFloatData);
 
-                  // clear before it gives it new data
-                  // recorder.clear();
+            //       // clear before it gives it new data
+            //       // recorder.clear();
                   
-                  //recorder.setBuffer(newChannelData);
-               });
-               harmonized_clicked_once = true;
-            }
-         }
+            //       //recorder.setBuffer(newChannelData);
+            //       window.location.href = "{{ url_for('harmonizedResults') }}";
+            //    });
+            //    harmonized_clicked_once = true;
+            // }
+         // }
 
          try {
             // webkit shim
