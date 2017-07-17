@@ -403,7 +403,7 @@
             dummyData = "";
             $.post("/harmonizeUploaded", dummy, function(data) {
                dummyData = data;
-            });
+
                // key stuff
                var tonic_e = document.getElementById("tonic_picker");
                var mode_e = document.getElementById("mode_picker");
@@ -417,10 +417,11 @@
 
                $.post("/keyData", keyString, function(data) {
                   console.log("new key data: " + data);
+                  harmonized_upload_clicked_once = true;
+                  window.location.href = "{{ url_for('harmonizedResults') }}";
                });
+            });
          }
-         window.location.href = "{{ url_for('harmonizedResults') }}";
-         harmonized_upload_clicked_once = true;
       }
 
       window.onload = function init() {
