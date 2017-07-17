@@ -127,7 +127,7 @@ def harmonizedResults():
 @app.route('/harmonizeData', methods=['GET', 'POST'])
 def harmonizeData():
 	if request.method == 'POST':
-		print "harmonizeData POST"
+		# print "harmonizeData POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -165,8 +165,8 @@ def harmonizeData():
 		pythlist_original = original_np.tolist() # pythlist_original is list, original_np is np.array
 		pythliststring = str(pythlist_original)
 
-		print "hello"
-		print "length of pythliststring: " + str(len(pythliststring))
+		# print "hello"
+		# print "length of pythliststring: " + str(len(pythliststring))
 
 		# update this IP Address's original_audio_str; has brackets
 		cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
@@ -192,7 +192,7 @@ def harmonizeData():
 		close_connection("Normal")
 		return pythliststring
 	elif request.method =='GET':
-		print "harmonizeData GET"
+		# print "harmonizeData GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -220,7 +220,7 @@ def harmonizeData():
 @app.route('/harmonizeUploaded', methods=['GET', 'POST'])
 def harmonizedUploaded():
 	if request.method == 'POST':
-		print "harmonizedUploaded POST"
+		# print "harmonizedUploaded POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -288,7 +288,7 @@ def harmonizedUploaded():
 @app.route('/originalAudio', methods=['GET'])
 def originalAudio():
 	if request.method == 'GET':
-		print "originalAudio GET"
+		# print "originalAudio GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -320,7 +320,7 @@ def originalAudio():
 @app.route('/keyData', methods=['GET', 'POST'])
 def keyData():
 	if request.method == 'POST':
-		print "keyData POST"
+		# print "keyData POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -344,7 +344,7 @@ def keyData():
 		# close_connection("Normal")
 		return key_data
 	elif request.method == 'GET': # GET used by record and upload, for user to re-hear key
-		print "keyData GET"
+		# print "keyData GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -372,7 +372,7 @@ def keyData():
 @app.route('/shiftData', methods=['POST'])
 def shiftData():
 	if request.method == 'POST':
-		print "shiftData POST"
+		# print "shiftData POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -407,7 +407,7 @@ def send_js(path):
 #oh. it is useful.
 #takes in audio as np.array
 def processAudioWithHarmonies(audio, tonic, mode, shift):
-	print "processAudioWithHarmonies"
+	# print "processAudioWithHarmonies"
 	newaudio, pitchesmelody_verb, melody_midi, onset_times = harmonizeme(audio, tonic, mode, shift)
 
 	# converting python lists to strings
@@ -452,7 +452,7 @@ def allowed_file(filename):
 @app.route('/uploader', methods=['POST'])
 def upload_file():
 	if request.method == 'POST':
-		print "upload_file POST"
+		# print "upload_file POST"
 		# check if the post request has the file part
 		if 'file' not in request.files:
 			flash('No file part')
@@ -526,7 +526,7 @@ def reload():
 @app.route('/getAudios', methods=['GET'])
 def getAudios():
 	if request.method == 'GET':
-		print "getAudios GET"
+		# print "getAudios GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -546,12 +546,12 @@ def getAudios():
 		cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
 		original_audio_str = cur.fetchone()[0]
 
-		print "harmonized_audio_str length of string: " + str(len(harmonized_audio_str))
-		print "original_audio_str length of string: " + str(len(original_audio_str))
+		# print "harmonized_audio_str length of string: " + str(len(harmonized_audio_str))
+		# print "original_audio_str length of string: " + str(len(original_audio_str))
 
 		harmonized_original_str = harmonized_audio_str + ';' + original_audio_str
 
-		print "harmonized_original_str length of string: " + str(len(harmonized_original_str))
+		# print "harmonized_original_str length of string: " + str(len(harmonized_original_str))
 
 		# outro
 		db.commit()
@@ -563,7 +563,7 @@ def getAudios():
 #real matplot
 @app.route('/plot')
 def plot():
-	print "plotting"
+	# print "plotting"
 	import StringIO
 
 	import matplotlib.pyplot as plt
