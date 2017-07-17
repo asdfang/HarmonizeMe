@@ -407,11 +407,13 @@
          l = document.getElementById('harmonized_results_link');
 
          // getting tonic and mode
-         $.get("/keyData", function(data) {
-            var return_data = data.split(',');
-            tonic = parseInt(return_data[0]);
-            mode = parseInt(return_data[1]);
-         });
+         // $.get("/keyData", function(data) {
+         //    var return_data = data.split(',');
+         //    tonic = parseInt(return_data[0]);
+         //    mode = parseInt(return_data[1]);
+         // });
+         tonic = 60;
+         mode = 0;
 
 
 
