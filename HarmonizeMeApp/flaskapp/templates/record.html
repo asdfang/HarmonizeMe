@@ -425,6 +425,7 @@
                console.log("harmonized button clicked...");
                l.innerHTML = "Harmonizing now...";
                strData = bufferData.toString();
+               console.log(strData);
                newData = "";
                test = "0.1234, 0.4321";
                $.post("/harmonizeData", test, function(data) {
