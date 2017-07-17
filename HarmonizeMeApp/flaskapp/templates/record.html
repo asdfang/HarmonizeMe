@@ -412,10 +412,6 @@
             tonic = parseInt(return_data[0]);
             mode = parseInt(return_data[1]);
          });
-         tonic = 60;
-         mode = 0;
-
-
 
          initWaveSurfer();
 
@@ -426,6 +422,7 @@
             // to avoid having multiple clicks to it make it blow up, but to also not completely disable the link.
             if (!harmonized_clicked_once)
             {
+               console.log("harmonized button clicked...");
                l.innerHTML = "Harmonizing now...";
                strData = bufferData.toString();
                newData = "";
@@ -440,9 +437,8 @@
                   
                   //recorder.setBuffer(newChannelData);
                });
+               harmonized_clicked_once = true;
             }
-            harmonized_clicked_once = true;
-
          }
 
          try {
