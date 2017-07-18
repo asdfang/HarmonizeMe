@@ -96,6 +96,7 @@
             </p> 
 
             <div id="waveform"></div> <br>
+            <p id="please-wait" style="display:none;"> Displaying audio, please wait...</p>
             <div style="text-align:center">
                <button id="playButton" class="btn btn-info btn-space" onclick="play(this);" style="display:none"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
                <button class="btn btn-info btn-space" onclick="pause(this);" style="display:none" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
@@ -110,7 +111,12 @@
                   <small class="form-text">Please check for the allowed extensions.</small>
                   {% endif %}
                   <center><input class="form-control-file" type="file" name="file" style="margin-bottom:4px"></input></center>
-                  <input class="btn btn-primary btn-space" type="submit" value="Upload" disabled />
+                  <input class="btn btn-primary btn-space" type="submit" value="Upload" onclick="changeDisplay(this)" disabled/>
+                  <script>
+                     function changeDisplay(button) {
+                        button.value = "Uploading now...";
+                     }
+                  </script>
                   <small class="form-text text-muted">Allowed extensions: .mp3, .wav</small>
                </form>
                {% else %}
@@ -121,6 +127,8 @@
                   <input class="btn btn-info btn-space" type="submit" value="Upload another file" \>
                </form>
                <script>
+                  var pW = document.getElementById('please-wait');
+                  pW.style.display = '';
                   var original_audio_buffer;
                   $.get("/originalAudio", function(data) {
                      original_audio_buffer = data;
@@ -140,6 +148,7 @@
 
                      wavesurfer.loadBlob(audioBlob);
                      wavesurfer.on('ready', function() {
+                        pW.style.display = 'none';
                         console.log("WaveSurfer is ready to play.");
                         wavesurfer.on('finish', function() {
                            replay = true;

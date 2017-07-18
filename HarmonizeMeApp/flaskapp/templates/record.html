@@ -111,6 +111,7 @@
                   Listen to what you just recorded below! You are free to re-record if you would like.
                </p>
                <div id="waveform"></div> <br>
+               <p id="please-wait" style="display:none;"> Displaying audio, please wait...</p>
                <div style="text-align:center">
                   <button id="playButton" class="btn btn-info btn-space" onclick="play(this);" style="display:none"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
                   <button class="btn btn-info btn-space" onclick="pause(this);" style="display:none" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
@@ -198,6 +199,7 @@
       }
 
       function stopRecording(button) {
+         pW.style.display = '';
          recorder && recorder.stop();
          // enable Record button while stopped
          button.previousElementSibling.previousElementSibling.disabled = false;
@@ -232,6 +234,7 @@
 
             wavesurfer.loadBlob(audioBlob);
             wavesurfer.on('ready', function() {
+               pW.style.display = 'none';
                console.log("WaveSurfer is ready to play.");
                wavesurfer.on('finish', function() {
                   replay = true;
@@ -430,6 +433,7 @@
          p = document.getElementById('playRecordedInstructions');
          rB = document.getElementById('recordButton');
          l = document.getElementById('harmonized_results_link');
+         pW = document.getElementById('please-wait');
 
          // getting tonic and mode
          $.get("/keyData", function(data) {

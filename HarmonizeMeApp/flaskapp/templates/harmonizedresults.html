@@ -43,6 +43,7 @@
 
          <div class="jumbotron">
             <div id="waveform"></div> <br>
+            <p id="please-wait"> Displaying audio, please wait...</p>
             <div style="text-align:center">
                <button id="playButton" class="btn btn-info btn-space" onclick="play(this);"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
                <button class="btn btn-info btn-space" onclick="pause(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
@@ -55,6 +56,7 @@
          <h4 style="text-align:center">Original sung audio:</h4>
          <div class="jumbotron">
             <div id="waveform2"></div> <br>
+            <p id="please-wait2"> Displaying audio, please wait...</p>
             <div style="text-align:center">
                <button id="playButton2" class="btn btn-info btn-space" onclick="play2(this);"><span class="glyphicon glyphicon-play" aria-hidden="true"></span> Play</button>
                <button class="btn btn-info btn-space" onclick="pause2(this);" disabled><span class="glyphicon glyphicon-pause" aria-hidden="true"></span> Pause</button>
@@ -135,6 +137,8 @@
             
             wavesurfer.loadBlob(audioBlob);
             wavesurfer.on('ready', function() {
+               var pW = document.getElementById('please-wait');
+               pW.style.display = 'none';
                console.log("WaveSurfer ready to play.");
                wavesurfer.on('finish', function() {
                   replay = true;
@@ -163,6 +167,8 @@
 
             wavesurfer2.loadBlob(audioBlob);
             wavesurfer2.on('ready', function() {
+               var pW2 = document.getElementById('please-wait2');
+               pW2.style.display = 'none';
                console.log("WaveSurfer2 ready to play.");
                wavesurfer2.on('finish', function() {
                   replay2 = true;
