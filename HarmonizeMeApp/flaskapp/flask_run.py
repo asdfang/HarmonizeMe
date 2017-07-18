@@ -61,6 +61,10 @@ def index():
 	cur = get_db().cursor()
 	ip_addr = request.environ['REMOTE_ADDR'] # ip_addr is a string
 
+	real_ip_addr = request.headers.get('X-Real-IP')
+	print type(real_ip_addr)
+	print "real one??: " + str(real_ip_addr)
+
 	# seeing if there is already a row with the same IP Address
 	cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
 	count = cur.fetchone()[0] # tuple with just one entry, count is type int
