@@ -53,6 +53,11 @@ div .container {
 .col {
    flex: 1;
 }
+#instructions {
+  margin: 0 auto;
+}
+/*if this doesn't work, add media query (at bottom) to re-size font, set display as block*/
+
 .num {
    text-align: right;
    font-family: Merriweather, Times;
