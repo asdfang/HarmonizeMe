@@ -73,6 +73,7 @@
 
          function recordLinkUp() {
             $.post("/shiftData", "up", function(data) {
+               console.log("link to recording clicked...");
                console.log("Your voice will be shifted " + data);
                window.location.href = "{{ url_for('record') }}";
             });
@@ -80,6 +81,7 @@
 
          function recordLinkDown() {
             $.post("/shiftData", "down", function(data) {
+               console.log("link to recording clicked...");
                console.log("Your voice will be shifted " + data);
                window.location.href = "{{ url_for('record') }}";
             });

@@ -72,6 +72,7 @@
       //    }
          function uploadLinkUp() {
             $.post("/shiftData", "up", function(data) {
+               console.log("link to uploading clicked...");
                console.log("Your voice will be shifted " + data);
                window.location.href = "{{ url_for('upload') }}";
             });
@@ -79,6 +80,7 @@
 
          function uploadLinkDown() {
             $.post("/shiftData", "down", function(data) {
+               console.log("link to uploading clicked...");
                console.log("Your voice will be shifted " + data);
                window.location.href = "{{ url_for('upload') }}";
             });
