@@ -44,30 +44,45 @@
                Please select where you want the voices added:
             </p>
                <div id="buttons" class="container">
-                  <a id="shift-up" href="{{ url_for('record') }}" class="btn btn-primary btn-outline btn-lg" style="margin-right:10%;">Above</a>
-                  <!-- <button type="button" class="btn btn-primary btn-outline btn-xlarge" style="margin-right:10%;">Record!</button> -->
-                  <a id="shift-down" href="{{ url_for('record') }}" class="btn btn-primary btn-outline btn-lg" style="margin-left:10%;">Below</a>
+                  <!-- <a id="shift-up" href="{{ url_for('record') }}" class="btn btn-primary btn-outline btn-lg" style="margin-right:10%;">Above</a> -->
+                  <button id="shift-up" class="btn btn-primary btn-outline btn-lg" onclick="recordLinkUp();" style="margin-right:10%;">Above</a>
+                  <button id="shift-down" class="btn btn-primary btn-outline btn-lg" onclick="recordLinkDown();" style="margin-left:10%;">Below</a>
+                  <!-- <a id="shift-down" href="{{ url_for('record') }}" class="btn btn-primary btn-outline btn-lg" style="margin-left:10%;">Below</a> -->
                </div>
          </div>
       </div> <!-- end container -->
 
       <script>
-         var shiftUpLink, shiftDownLink;
+         // var shiftUpLink, shiftDownLink;
 
-         window.onload = function() {
-            shiftUpLink = document.getElementById("shift-up");
-            shiftDownLink = document.getElementById("shift-down");
+         // window.onload = function() {
+         //    shiftUpLink = document.getElementById("shift-up");
+         //    shiftDownLink = document.getElementById("shift-down");
 
-            shiftUpLink.onclick = function() {
-               $.post("/shiftData", "up", function(data) {
-                  console.log("Your voice will be shifted " + data);
-               });
-            }
-            shiftDownLink.onclick = function() {
-               $.post("/shiftData", "down", function(data) {
-                  console.log("Your voice will be shifted " + data);
-               });
-            }
+         //    shiftUpLink.onclick = function() {
+         //       $.post("/shiftData", "up", function(data) {
+         //          console.log("Your voice will be shifted " + data);
+         //       });
+         //    }
+         //    shiftDownLink.onclick = function() {
+         //       $.post("/shiftData", "down", function(data) {
+         //          console.log("Your voice will be shifted " + data);
+         //       });
+         //    }
+         // }
+
+         function recordLinkUp() {
+            $.post("/shiftData", "up", function(data) {
+               console.log("Your voice will be shifted " + data);
+               window.location.href = "{{ url_for('record') }}";
+            });
+         }
+
+         function recordLinkDown() {
+            $.post("/shiftData", "down", function(data) {
+               console.log("Your voice will be shifted " + data);
+               window.location.href = "{{ url_for('record') }}";
+            });
          }
       </script>
    </body>

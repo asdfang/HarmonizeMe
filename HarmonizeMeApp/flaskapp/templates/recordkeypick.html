@@ -125,7 +125,9 @@
                </tr>
                <tr>
                   <td colspan="3" align="center">
-                     <a id="link_to_rangepick" href="{{ url_for('rangepick') }}" class="btn btn-info btn-outline btn-lg">Harmonize in this key!</a>
+                     <!-- <a id="link_to_rangepick" href="{{ url_for('rangepick') }}" class="btn btn-info btn-outline btn-lg">Harmonize in this key!</a>
+                     <button id="harmonized_results_link" class="btn btn-primary btn-xlarge disabled" onclick="harmonize();">Harmonize!!</button> -->
+                     <button id="link_to_rangepick" class="btn btn-info btn-outline btn-lg" onclick="rangeLink();">Harmonize in this key!</a>
                   </td>
                </tr>
             </table>
@@ -138,26 +140,45 @@
          window.onload = function() {
             curr_audio = null;
 
-            var link_to_rangepick = document.getElementById("link_to_rangepick");
+            // var link_to_rangepick = document.getElementById("link_to_rangepick");
 
-            link_to_rangepick.onclick = function() {
-               // key stuff
-               var tonic_e = document.getElementById("tonic_picker");
-               var mode_e = document.getElementById("mode_picker");
+            // link_to_rangepick.onclick = function() {
+            //    // key stuff
+            //    var tonic_e = document.getElementById("tonic_picker");
+            //    var mode_e = document.getElementById("mode_picker");
 
-               // to send to Harmonizer.py
-               var tonic = tonic_e.options[tonic_e.selectedIndex].value;
-               var mode = mode_e.options[mode_e.selectedIndex].value;
+            //    // to send to Harmonizer.py
+            //    var tonic = tonic_e.options[tonic_e.selectedIndex].value;
+            //    var mode = mode_e.options[mode_e.selectedIndex].value;
 
-               var key = [tonic, mode];
-               var keyString = key.toString();
+            //    var key = [tonic, mode];
+            //    var keyString = key.toString();
 
-               $.post("/keyData", keyString, function(data) {
-                  console.log("data in key_picker.html: " + data);
-               });
-            }
+            //    $.post("/keyData", keyString, function(data) {
+            //       console.log("data in key_picker.html: " + data);
+            //    });
+            // }
          }
 
+         function rangeLink(button) {
+            console.log("link to range selection clicked...");
+
+            // key stuff
+            var tonic_e = document.getElementById("tonic_picker");
+            var mode_e = document.getElementById("mode_picker");
+
+            // to send to Harmonizer.py
+            var tonic = tonic_e.options[tonic_e.selectedIndex].value;
+            var mode = mode_e.options[mode_e.selectedIndex].value;
+
+            var key = [tonic, mode];
+            var keyString = key.toString();
+
+            $.post("/keyData", keyString, function(data) {
+               console.log("data in key_picker.html: " + data);
+               window.location.href = "{{ url_for('rangepick') }}";
+            });
+         }
 
          function playKey(button) {
             // disable Play button while playing
