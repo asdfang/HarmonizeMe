@@ -59,11 +59,9 @@ def query_db(query, args=(), one=False):
 def index():
 	db = get_db()
 	cur = get_db().cursor()
-	ip_addr = request.environ['REMOTE_ADDR'] # ip_addr is a string
-
-	real_ip_addr = request.headers.get('X-Real-IP')
-	print type(real_ip_addr)
-	print "real one??: " + str(real_ip_addr)
+	# request.environ seems to get pythonanywhere's IP address on their servers. instead use...
+	# ip_addr = request.environ['REMOTE_ADDR'] # ip_addr is a string
+	ip_addr = str(request.headers.get('X-Real-IP'))
 
 	# seeing if there is already a row with the same IP Address
 	cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -135,7 +133,8 @@ def harmonizeData():
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
-		ip_addr = request.environ['REMOTE_ADDR']
+		# ip_addr = request.environ['REMOTE_ADDR']
+		ip_addr = str(request.headers.get('X-Real-IP'))
 
 		# making sure that this IP Address already has a row
 		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -200,7 +199,8 @@ def harmonizeData():
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
-		ip_addr = request.environ['REMOTE_ADDR']
+		# ip_addr = request.environ['REMOTE_ADDR']
+		ip_addr = str(request.headers.get('X-Real-IP'))
 
 		# making sure that this IP Address already has a row
 		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -228,7 +228,8 @@ def harmonizedUploaded():
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
-		ip_addr = request.environ['REMOTE_ADDR']
+		# ip_addr = request.environ['REMOTE_ADDR']
+		ip_addr = str(request.headers.get('X-Real-IP'))
 
 		# making sure that this IP Address already has a row
 		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -296,7 +297,8 @@ def originalAudio():
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
-		ip_addr = request.environ['REMOTE_ADDR']
+		# ip_addr = request.environ['REMOTE_ADDR']
+		ip_addr = str(request.headers.get('X-Real-IP'))
 
 		# making sure that this IP Address already has a row
 		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -328,7 +330,8 @@ def keyData():
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
-		ip_addr = request.environ['REMOTE_ADDR']
+		# ip_addr = request.environ['REMOTE_ADDR']
+		ip_addr = str(request.headers.get('X-Real-IP'))
 
 		# making sure that this IP Address already has a row
 		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -352,7 +355,8 @@ def keyData():
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
-		ip_addr = request.environ['REMOTE_ADDR']
+		# ip_addr = request.environ['REMOTE_ADDR']
+		ip_addr = str(request.headers.get('X-Real-IP'))
 
 		# making sure that this IP Address already has a row
 		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -380,7 +384,8 @@ def shiftData():
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
-		ip_addr = request.environ['REMOTE_ADDR']
+		# ip_addr = request.environ['REMOTE_ADDR']
+		ip_addr = str(request.headers.get('X-Real-IP'))
 
 		# making sure that this IP Address already has a row
 		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -430,7 +435,8 @@ def processAudioWithHarmonies(audio, tonic, mode, shift):
 	# intro
 	db = get_db()
 	cur = get_db().cursor()
-	ip_addr = request.environ['REMOTE_ADDR']
+	# ip_addr = request.environ['REMOTE_ADDR']
+	ip_addr = str(request.headers.get('X-Real-IP'))
 
 	# making sure that this IP Address already has a row
 	cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -486,7 +492,8 @@ def upload_file():
 			# intro
 			db = get_db()
 			cur = get_db().cursor()
-			ip_addr = request.environ['REMOTE_ADDR']
+			# ip_addr = request.environ['REMOTE_ADDR']
+			ip_addr = str(request.headers.get('X-Real-IP'))
 
 			# making sure that this IP Address already has a row
 			cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -534,7 +541,8 @@ def getAudios():
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
-		ip_addr = request.environ['REMOTE_ADDR']
+		# ip_addr = request.environ['REMOTE_ADDR']
+		ip_addr = str(request.headers.get('X-Real-IP'))
 
 		# making sure that this IP Address already has a row
 		cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -581,7 +589,8 @@ def plot():
 	# intro
 	db = get_db()
 	cur = get_db().cursor()
-	ip_addr = request.environ['REMOTE_ADDR']
+	# ip_addr = request.environ['REMOTE_ADDR']
+	ip_addr = str(request.headers.get('X-Real-IP'))
 
 	# making sure that this IP Address already has a row
 	cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
