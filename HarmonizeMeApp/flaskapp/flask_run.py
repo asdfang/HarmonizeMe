@@ -333,7 +333,7 @@ def originalAudio():
 @app.route('/keyData', methods=['GET', 'POST'])
 def keyData():
 	if request.method == 'POST':
-		# print "keyData POST"
+		print "keyData POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -358,7 +358,7 @@ def keyData():
 		# close_connection("Normal")
 		return key_data
 	elif request.method == 'GET': # GET used by record and upload, for user to re-hear key
-		# print "keyData GET"
+		print "keyData GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -387,7 +387,7 @@ def keyData():
 @app.route('/shiftData', methods=['POST'])
 def shiftData():
 	if request.method == 'POST':
-		# print "shiftData POST"
+		print "shiftData POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -584,7 +584,7 @@ def getAudios():
 #real matplot
 @app.route('/plot')
 def plot():
-	# print "plotting"
+	print "plotting"
 	import StringIO
 
 	import matplotlib.pyplot as plt
