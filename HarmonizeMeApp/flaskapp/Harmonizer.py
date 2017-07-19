@@ -110,9 +110,11 @@ def harmonizeme(audio, tonic_input, mode_input, shift_input):
 	audiolist = audio.tolist() # to convert to python list
 	audio = audio.astype(np.float32) #to convert to np array
 
+	print "pitch and onset detection called"
 	#aubio results
 	pitchesmelody_verb = aubio_pitches(audio)
 	onset_samps = aubio_onsets(audio)
+	print "pitch and onset detection done"
 
 	#if no onsets, return original audio. -- alert the user?
 	if len(onset_samps) == 0:
@@ -210,6 +212,7 @@ def harmonize(melody, tonic, splicedaudio, mode, shift):
 	'''
 	making the new pitches in a long melody; taking in melodysd, ex1_prog, tonic, splicedaudio
 	'''
+	print "start pitch shifting"
 	complete = []
 	complete = numpy.array(complete)
 	for ii in range(len(melody)):
@@ -222,4 +225,5 @@ def harmonize(melody, tonic, splicedaudio, mode, shift):
 		sounding_chord = npchord[0] + npchord[1] + npchord[2]
 		complete = numpy.concatenate((complete, sounding_chord))
 
+	print "end pitch shifting"
 	return complete, realized

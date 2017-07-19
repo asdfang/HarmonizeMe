@@ -62,6 +62,8 @@ def index():
 	# request.environ seems to get pythonanywhere's IP address on their servers. instead use...
 	# ip_addr = request.environ['REMOTE_ADDR'] # ip_addr is a string
 	ip_addr = str(request.headers.get('X-Real-IP'))
+	print "*********************************"
+	print "User IP Address: " + ip_addr
 
 	# seeing if there is already a row with the same IP Address
 	cur.execute('SELECT count(*) FROM data WHERE ip_addr=?', (ip_addr,))
@@ -129,7 +131,7 @@ def harmonizedResults():
 @app.route('/harmonizeData', methods=['GET', 'POST'])
 def harmonizeData():
 	if request.method == 'POST':
-		# print "harmonizeData POST"
+		print "harmonizeData POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -168,9 +170,9 @@ def harmonizeData():
 		pythlist_original = original_np.tolist() # pythlist_original is list, original_np is np.array
 		pythliststring = str(pythlist_original)
 
-		# print "hello"
 		# print "length of pythliststring: " + str(len(pythliststring))
 
+		print "length of original_audio_str first posted: " + str(len(pythliststring))
 		# update this IP Address's original_audio_str; has brackets
 		cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
@@ -187,6 +189,7 @@ def harmonizeData():
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
 
+		print "length of harmonized_audio_str first posted: " + str(len(pythliststring))
 		# update this IP Address's harmonized_audio_str; has brackets
 		cur.execute('UPDATE data SET harmonized_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
@@ -195,7 +198,7 @@ def harmonizeData():
 		close_connection("Normal")
 		return pythliststring
 	elif request.method =='GET':
-		# print "harmonizeData GET"
+		print "harmonizeData GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -224,7 +227,7 @@ def harmonizeData():
 @app.route('/harmonizeUploaded', methods=['GET', 'POST'])
 def harmonizedUploaded():
 	if request.method == 'POST':
-		# print "harmonizedUploaded POST"
+		print "harmonizedUploaded POST"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -264,6 +267,7 @@ def harmonizedUploaded():
 		pythlist_original = original.tolist()
 		pythliststring = str(pythlist_original)
 
+		print "length of original_audio_str second posted: " + str(len(pythliststring))
 		# update IP Address's original_audio_str to have brackets
 		cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
@@ -280,6 +284,7 @@ def harmonizedUploaded():
 		pythlist = newdata.tolist()
 		pythliststring = str(pythlist)
 
+		print "length of harmonized_audio_str first posted: " + str(len(pythliststring))
 		# update this IP Address's harmonized_audio_str; has brackets
 		cur.execute('UPDATE data SET harmonized_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
@@ -293,7 +298,7 @@ def harmonizedUploaded():
 @app.route('/originalAudio', methods=['GET'])
 def originalAudio():
 	if request.method == 'GET':
-		# print "originalAudio GET"
+		print "originalAudio GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -310,6 +315,8 @@ def originalAudio():
 
 		cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
 		return_data = cur.fetchone()[0]
+		print "length of original_audio_str gotten: " + str(len(return_data))
+
 
 		# JSON wants brackets
 		if return_data[0] != '[' and return_data[-1] != ']':
@@ -416,7 +423,7 @@ def send_js(path):
 #oh. it is useful.
 #takes in audio as np.array
 def processAudioWithHarmonies(audio, tonic, mode, shift):
-	# print "processAudioWithHarmonies"
+	print "processAudioWithHarmonies called"
 	newaudio, pitchesmelody_verb, melody_midi, onset_times = harmonizeme(audio, tonic, mode, shift)
 
 	# converting python lists to strings
@@ -451,6 +458,7 @@ def processAudioWithHarmonies(audio, tonic, mode, shift):
 	cur.execute('UPDATE data SET melody_midi_str=? WHERE ip_addr=?', (melody_midi_str, ip_addr))
 	cur.execute('UPDATE data SET onset_times_str=? WHERE ip_addr=?', (onset_times_str, ip_addr))
 
+	print "processAudioWithHarmonies end"
 	# outro
 	db.commit()
 	return newaudio
@@ -462,7 +470,7 @@ def allowed_file(filename):
 @app.route('/uploader', methods=['POST'])
 def upload_file():
 	if request.method == 'POST':
-		# print "upload_file POST"
+		print "upload_file POST"
 		# check if the post request has the file part
 		if 'file' not in request.files:
 			flash('No file part')
@@ -503,6 +511,7 @@ def upload_file():
 				close_connection(error_msg)
 				return error_msg
 
+			print "length of original_audio_str first posted: " + str(len(pythliststring))
 			# update this IP Address's original_audio_str; no brackets
 			cur.execute('UPDATE data SET original_audio_str=? WHERE ip_addr=?', (pythliststring, ip_addr))
 
@@ -537,7 +546,7 @@ def reload():
 @app.route('/getAudios', methods=['GET'])
 def getAudios():
 	if request.method == 'GET':
-		# print "getAudios GET"
+		print "getAudios GET"
 		# intro
 		db = get_db()
 		cur = get_db().cursor()
@@ -558,12 +567,12 @@ def getAudios():
 		cur.execute('SELECT original_audio_str FROM data WHERE ip_addr=?', (ip_addr,))
 		original_audio_str = cur.fetchone()[0]
 
-		# print "harmonized_audio_str length of string: " + str(len(harmonized_audio_str))
-		# print "original_audio_str length of string: " + str(len(original_audio_str))
+		print "harmonized_audio_str length of string: " + str(len(harmonized_audio_str))
+		print "original_audio_str length of string: " + str(len(original_audio_str))
 
 		harmonized_original_str = harmonized_audio_str + ';' + original_audio_str
 
-		# print "harmonized_original_str length of string: " + str(len(harmonized_original_str))
+		print "harmonized_original_str length of string: " + str(len(harmonized_original_str))
 
 		# outro
 		db.commit()
