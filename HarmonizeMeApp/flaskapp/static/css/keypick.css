@@ -30,7 +30,15 @@ td {
 br {
    line-height: 150%;
 }
-
+#instructions{
+  display: block;
+  margin: 0 auto; 
+}
+/*for h1, reduce line-height and reduce font size when it gets too small*/
+.desc1{
+  display: block;
+  margin: 0 auto;
+}
 /*Div stuff*/
 div {
    text-align: center;
